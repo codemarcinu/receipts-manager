@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from src.config import config
 from src.database.models import Base, Receipt, ReceiptItem, Category, ProductStatus
 from datetime import datetime, timedelta
@@ -8,12 +8,22 @@ from typing import List, Optional
 
 class DatabaseManager:
     def __init__(self, database_url: str = None):
-        self.engine = create_engine(database_url or config.DATABASE_URL)
-        self.Session = sessionmaker(bind=self.engine)
+        self.engine = create_engine(
+            database_url or config.DATABASE_URL, 
+            echo=False,  # Set to True for SQL logging
+            pool_pre_ping=True,  # Connection health check
+            pool_recycle=3600  # Recycle connections after an hour
+        )
+        self.session_factory = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(self.session_factory)
 
     def get_session(self):
         """Zwraca nową sesję bazy danych"""
         return self.Session()
+
+    def dispose_engine(self):
+        self.Session.remove()
+        self.engine.dispose()
 
     def get_categories(self) -> List[Category]:
         """Pobiera wszystkie kategorie"""

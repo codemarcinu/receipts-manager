@@ -4,9 +4,9 @@ from src.config import Config
 import logging
 
 
-def create_app(config_class=Config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    app.config.from_object(Config)
 
     # Inicjalizacja rozszerzeń
     db.init_app(app)

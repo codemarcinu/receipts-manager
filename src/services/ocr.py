@@ -4,11 +4,33 @@ from google.cloud import vision
 from pathlib import Path
 from typing import Dict, Any
 import logging
+import pytesseract
+from PIL import Image
 
 # Konfiguracja loggera
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+class OCRService:
+    def __init__(self, credentials_path: str = None):
+        self.credentials_path = credentials_path
+
+    def process_image(self, image_path):
+        """
+        Process an image and extract text using Tesseract OCR
+        
+        Args:
+            image_path (str): Path to the image file
+        
+        Returns:
+            str: Extracted text from the image
+        """
+        try:
+            image = Image.open(image_path)
+            text = pytesseract.image_to_string(image)
+            return text
+        except Exception as e:
+            raise RuntimeError(f"OCR processing failed: {str(e)}")
 
 def process_receipt_image(image_path: str) -> Dict[str, Any]:
     """

@@ -204,7 +204,8 @@ def delete_receipt(receipt_id):
             except Exception as e:
                 logger.warning(f"Nie udało się usunąć pliku paragonu: {str(e)}")
 
-        receipt.delete()
+        db.session.delete(receipt)
+        db.session.commit()
         
         return jsonify({
             'success': True, 

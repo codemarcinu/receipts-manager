@@ -1,3 +1,12 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
+from database.manager import DatabaseManager
+from config import Config
+
+from web.app import app
+
 from flask import (
 
     Blueprint,
@@ -119,33 +128,26 @@ def upload():
             file.save(filepath)
 
 
-            # Tworzenie nowego paragonu
-            db.session.add(Receipt(
-                store_name=form.store_name.data,
-                purchase_date=datetime.now().date(),
-
-                total_amount=0,
-
-                status='new'
-            ))
-
+            # Dodawanie paragonu do bazy danych
+            receipt = Receipt(
+                store=form.store.data,
+                purchase_date=form.purchase_date.data,
+                total_amount=form.total_amount.data,
+                image_filename=filename
+            )
+            db.session.add(receipt)
             db.session.commit()
 
 
             flash('Paragon został pomyślnie dodany.', 'success')
 
-            return redirect(url_for('receipts.verify_receipt', receipt_id=(Receipt(
-                store_name=form.store_name.data,
-                purchase_date=datetime.now().date(),
-                total_amount=0,
-                status='new'
-            )).id))
+            return redirect(url_for('receipts.index'))
 
         except Exception as e:
 
-            logger.error(f"Błąd podczas uploadu paragonu: {str(e)}")
+            db.session.rollback()
 
-            flash('Wystąpił błąd podczas uploadu paragonu.', 'error')
+            flash(f'Wystąpił błąd podczas dodawania paragonu: {str(e)}', 'danger')
 
 
     return render_template('upload.html', form=form)
@@ -426,3 +428,35 @@ def upload_receipt():
             return redirect(url_for('receipts.upload_receipt'))
             
     return render_template('upload.html')
+
+
+def test_save_receipt(db_manager):
+    """Test zapisywania paragonu"""
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Test Product 1',
+                'quantity': 2,
+                'price': 25.25,
+                'unit': 'szt'
+            },
+            {
+                'name': 'Test Product 2',
+                'quantity': 1,
+                'price': 50.00,
+                'unit': 'szt'
+            }
+        ]
+    }
+
+    # Zapisanie paragonu
+    receipt = db_manager.save_receipt(receipt_data)
+
+    # Sprawdzenie czy paragon został zapisany
+    assert receipt.id is not None
+    assert receipt.store == 'Test Store'
+    assert receipt.total == 100.50
+    assert len(receipt.items) == 2
