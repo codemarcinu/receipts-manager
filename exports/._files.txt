@@ -1,0 +1,4581 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.coverage
+================================================================================
+
+[ERROR] Could not read file: C:\Users\marci\Documents\GitHub\receipts-manager\.coverage
+Error: 'utf-8' codec can't decode byte 0x89 in position 99: invalid start byte
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.env
+================================================================================
+
+FLASK_APP=src.web:create_app
+FLASK_ENV=development
+FLASK_DEBUG=True
+SECRET_KEY=dev-key-change-in-production
+DATABASE_URL=sqlite:///data/zakupy.db
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.gitignore
+================================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+logs/*
+!logs/.gitkeep
+data/*
+!data/.gitkeep
+config/credentials.json
+.envproject_analysis.json
+project_files_content.txt
+project_analysis.json
+project_analysis.json
+config/credentials.json
+
+# Ignore Google Cloud Vision credentials
+config/credentials/google-cloud-vision.json
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\app.log
+================================================================================
+
+2024-12-27 21:47:25,704 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:47:25,705 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:47:25,707 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:47:26,206 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:47:26,213 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:49:44,488 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/scripts/init_db.py', reloading
+2024-12-27 21:49:44,644 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:49:45,230 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:49:45,233 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:52:32,528 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/setup.py', reloading
+2024-12-27 21:52:32,690 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:52:33,219 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:52:33,221 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:10,610 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:54:10,610 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:54:10,611 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:54:11,109 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:54:11,111 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:40,238 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET / HTTP/1.1[0m" 404 -
+2024-12-27 21:54:40,536 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\collect_files.py
+================================================================================
+
+import os
+from pathlib import Path
+from datetime import datetime
+
+def scan_project_structure(root_dir):
+    """Zwraca słownik, w którym kluczami są katalogi, a wartościami listy plików."""
+    project_structure = {}
+    for root, _, files in os.walk(root_dir):
+        root_path = Path(root)
+        if files:
+            project_structure[root_path] = [root_path / file for file in files]
+    return project_structure
+
+def save_files_by_directory(project_structure, output_dir):
+    """Zapisuje zawartość plików do osobnych plików dla każdego katalogu."""
+    for directory, files in project_structure.items():
+        relative_dir = directory.relative_to(root_dir)
+        output_file_path = output_dir / f"{relative_dir.as_posix().replace('/', '_')}_files.txt"
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with output_file_path.open('w', encoding='utf-8') as f:
+            f.write(f"=== Directory: {directory} ===\n\n")
+
+            for file_path in files:
+                f.write(f"\n{'=' * 80}\n")
+                f.write(f"File: {file_path}\n")
+                f.write(f"{'=' * 80}\n\n")
+
+                try:
+                    with file_path.open('r', encoding='utf-8') as source_file:
+                        f.write(source_file.read())
+                except Exception as e:
+                    f.write(f"[ERROR] Could not read file: {file_path}\n")
+                    f.write(f"Error: {str(e)}\n")
+
+        print(f"Saved: {output_file_path}")
+
+def save_project_structure_to_file(project_structure, output_file_path):
+    """Zapisuje strukturę projektu do jednego pliku."""
+    with output_file_path.open('w', encoding='utf-8') as f:
+        for directory, files in project_structure.items():
+            f.write(f"Directory: {directory}\n")
+            for file in files:
+                f.write(f"    {file}\n")
+            f.write("\n")
+    print(f"Project structure saved in: {output_file_path}")
+
+if __name__ == "__main__":
+    # Parametry
+    root_dir = Path("C:/Users/marci/Documents/GitHub/receipts-manager")
+    output_dir = Path("exports")
+    
+    # Tworzenie katalogu wyjściowego
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Skanowanie struktury projektu
+    print(f"Scanning project directory: {root_dir}")
+    project_structure = scan_project_structure(root_dir)
+
+    # Zapisanie zawartości plików do osobnych plików dla każdego katalogu
+    save_files_by_directory(project_structure, output_dir)
+
+    # Zapisanie struktury projektu
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    save_project_structure_to_file(project_structure, output_dir / f'project_structure_{timestamp}.txt')
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\error_handlers.py
+================================================================================
+
+"""
+Moduł obsługi błędów dla aplikacji Flask.
+Definiuje handlery dla różnych kodów błędów HTTP.
+"""
+from flask import Blueprint, render_template
+from src.database import db
+
+errors = Blueprint('errors', __name__)
+
+@errors.app_errorhandler(404)
+def not_found_error(error):
+    """Obsługa błędu 404 - Nie znaleziono zasobu."""
+    return render_template('errors/404.html'), 404
+
+@errors.app_errorhandler(500)
+def internal_error(error):
+    """
+    Obsługa błędu 500 - Wewnętrzny błąd serwera.
+    W przypadku błędu wykonuje rollback sesji bazy danych.
+    """
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
+
+@errors.app_errorhandler(403)
+def forbidden_error(error):
+    """Obsługa błędu 403 - Brak dostępu."""
+    return render_template('errors/403.html'), 403
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\package-lock.json
+================================================================================
+
+{
+  "name": "receipts-manager",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "receipts-manager",
+      "version": "1.0.0",
+      "dependencies": {
+        "@material/web": "^1.0.0"
+      },
+      "devDependencies": {
+        "autoprefixer": "^10.4.16",
+        "postcss": "^8.4.32",
+        "tailwindcss": "^3.4.0"
+      }
+    },
+    "node_modules/@alloc/quick-lru": {
+      "version": "5.2.0",
+      "resolved": "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz",
+      "integrity": "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==",
+      "dev": true,
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/@isaacs/cliui": {
+      "version": "8.0.2",
+      "resolved": "https://registry.npmjs.org/@isaacs/cliui/-/cliui-8.0.2.tgz",
+      "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
+      "dev": true,
+      "dependencies": {
+        "string-width": "^5.1.2",
+        "string-width-cjs": "npm:string-width@^4.2.0",
+        "strip-ansi": "^7.0.1",
+        "strip-ansi-cjs": "npm:strip-ansi@^6.0.1",
+        "wrap-ansi": "^8.1.0",
+        "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0"
+      },
+      "engines": {
+        "node": ">=12"
+      }
+    },
+    "node_modules/@jridgewell/gen-mapping": {
+      "version": "0.3.8",
+      "resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.8.tgz",
+      "integrity": "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==",
+      "dev": true,
+      "dependencies": {
+        "@jridgewell/set-array": "^1.2.1",
+        "@jridgewell/sourcemap-codec": "^1.4.10",
+        "@jridgewell/trace-mapping": "^0.3.24"
+      },
+      "engines": {
+        "node": ">=6.0.0"
+      }
+    },
+    "node_modules/@jridgewell/resolve-uri": {
+      "version": "3.1.2",
+      "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+      "dev": true,
+      "engines": {
+        "node": ">=6.0.0"
+      }
+    },
+    "node_modules/@jridgewell/set-array": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/@jridgewell/set-array/-/set-array-1.2.1.tgz",
+      "integrity": "sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==",
+      "dev": true,
+      "engines": {
+        "node": ">=6.0.0"
+      }
+    },
+    "node_modules/@jridgewell/sourcemap-codec": {
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.0.tgz",
+      "integrity": "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==",
+      "dev": true
+    },
+    "node_modules/@jridgewell/trace-mapping": {
+      "version": "0.3.25",
+      "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.25.tgz",
+      "integrity": "sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==",
+      "dev": true,
+      "dependencies": {
+        "@jridgewell/resolve-uri": "^3.1.0",
+        "@jridgewell/sourcemap-codec": "^1.4.14"
+      }
+    },
+    "node_modules/@lit-labs/ssr-dom-shim": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.2.1.tgz",
+      "integrity": "sha512-wx4aBmgeGvFmOKucFKY+8VFJSYZxs9poN3SDNQFF6lT6NrQUnHiPB2PWz2sc4ieEcAaYYzN+1uWahEeTq2aRIQ=="
+    },
+    "node_modules/@lit/reactive-element": {
+      "version": "2.0.4",
+      "resolved": "https://registry.npmjs.org/@lit/reactive-element/-/reactive-element-2.0.4.tgz",
+      "integrity": "sha512-GFn91inaUa2oHLak8awSIigYz0cU0Payr1rcFsrkf5OJ5eSPxElyZfKh0f2p9FsTiZWXQdWGJeXZICEfXXYSXQ==",
+      "dependencies": {
+        "@lit-labs/ssr-dom-shim": "^1.2.0"
+      }
+    },
+    "node_modules/@material/web": {
+      "version": "1.5.1",
+      "resolved": "https://registry.npmjs.org/@material/web/-/web-1.5.1.tgz",
+      "integrity": "sha512-S9iQV1Biq6JhNpAkqXcsFdVrLW0BC1Tez8C36MEQ/VuhT3YLQySbJkUiG+1U+J1jUqlsG8fT5XsEFbhomCY39w==",
+      "dependencies": {
+        "lit": "^2.7.4 || ^3.0.0",
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@nodelib/fs.scandir": {
+      "version": "2.1.5",
+      "resolved": "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz",
+      "integrity": "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==",
+      "dev": true,
+      "dependencies": {
+        "@nodelib/fs.stat": "2.0.5",
+        "run-parallel": "^1.1.9"
+      },
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/@nodelib/fs.stat": {
+      "version": "2.0.5",
+      "resolved": "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-2.0.5.tgz",
+      "integrity": "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A==",
+      "dev": true,
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/@nodelib/fs.walk": {
+      "version": "1.2.8",
+      "resolved": "https://registry.npmjs.org/@nodelib/fs.walk/-/fs.walk-1.2.8.tgz",
+      "integrity": "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==",
+      "dev": true,
+      "dependencies": {
+        "@nodelib/fs.scandir": "2.1.5",
+        "fastq": "^1.6.0"
+      },
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/@pkgjs/parseargs": {
+      "version": "0.11.0",
+      "resolved": "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz",
+      "integrity": "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==",
+      "dev": true,
+      "optional": true,
+      "engines": {
+        "node": ">=14"
+      }
+    },
+    "node_modules/@types/trusted-types": {
+      "version": "2.0.7",
+      "resolved": "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz",
+      "integrity": "sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw=="
+    },
+    "node_modules/ansi-regex": {
+      "version": "6.1.0",
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.1.0.tgz",
+      "integrity": "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA==",
+      "dev": true,
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/ansi-regex?sponsor=1"
+      }
+    },
+    "node_modules/ansi-styles": {
+      "version": "6.2.1",
+      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.1.tgz",
+      "integrity": "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==",
+      "dev": true,
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+      }
+    },
+    "node_modules/any-promise": {
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/any-promise/-/any-promise-1.3.0.tgz",
+      "integrity": "sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==",
+      "dev": true
+    },
+    "node_modules/anymatch": {
+      "version": "3.1.3",
+      "resolved": "https://registry.npmjs.org/anymatch/-/anymatch-3.1.3.tgz",
+      "integrity": "sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==",
+      "dev": true,
+      "dependencies": {
+        "normalize-path": "^3.0.0",
+        "picomatch": "^2.0.4"
+      },
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/arg": {
+      "version": "5.0.2",
+      "resolved": "https://registry.npmjs.org/arg/-/arg-5.0.2.tgz",
+      "integrity": "sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==",
+      "dev": true
+    },
+    "node_modules/autoprefixer": {
+      "version": "10.4.20",
+      "resolved": "https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.4.20.tgz",
+      "integrity": "sha512-XY25y5xSv/wEoqzDyXXME4AFfkZI0P23z6Fs3YgymDnKJkCGOnkL0iTxCa85UTqaSgfcqyf3UA6+c7wUvx/16g==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/postcss/"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/autoprefixer"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "browserslist": "^4.23.3",
+        "caniuse-lite": "^1.0.30001646",
+        "fraction.js": "^4.3.7",
+        "normalize-range": "^0.1.2",
+        "picocolors": "^1.0.1",
+        "postcss-value-parser": "^4.2.0"
+      },
+      "bin": {
+        "autoprefixer": "bin/autoprefixer"
+      },
+      "engines": {
+        "node": "^10 || ^12 || >=14"
+      },
+      "peerDependencies": {
+        "postcss": "^8.1.0"
+      }
+    },
+    "node_modules/balanced-match": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+      "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==",
+      "dev": true
+    },
+    "node_modules/binary-extensions": {
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.3.0.tgz",
+      "integrity": "sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/brace-expansion": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.1.tgz",
+      "integrity": "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==",
+      "dev": true,
+      "dependencies": {
+        "balanced-match": "^1.0.0"
+      }
+    },
+    "node_modules/braces": {
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+      "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+      "dev": true,
+      "dependencies": {
+        "fill-range": "^7.1.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/browserslist": {
+      "version": "4.24.3",
+      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.24.3.tgz",
+      "integrity": "sha512-1CPmv8iobE2fyRMV97dAcMVegvvWKxmq94hkLiAkUGwKVTyDLw33K+ZxiFrREKmmps4rIw6grcCFCnTMSZ/YiA==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/browserslist"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/browserslist"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "caniuse-lite": "^1.0.30001688",
+        "electron-to-chromium": "^1.5.73",
+        "node-releases": "^2.0.19",
+        "update-browserslist-db": "^1.1.1"
+      },
+      "bin": {
+        "browserslist": "cli.js"
+      },
+      "engines": {
+        "node": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7"
+      }
+    },
+    "node_modules/camelcase-css": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/camelcase-css/-/camelcase-css-2.0.1.tgz",
+      "integrity": "sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==",
+      "dev": true,
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/caniuse-lite": {
+      "version": "1.0.30001690",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001690.tgz",
+      "integrity": "sha512-5ExiE3qQN6oF8Clf8ifIDcMRCRE/dMGcETG/XGMD8/XiXm6HXQgQTh1yZYLXXpSOsEUlJm1Xr7kGULZTuGtP/w==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/browserslist"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/caniuse-lite"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ]
+    },
+    "node_modules/chokidar": {
+      "version": "3.6.0",
+      "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz",
+      "integrity": "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==",
+      "dev": true,
+      "dependencies": {
+        "anymatch": "~3.1.2",
+        "braces": "~3.0.2",
+        "glob-parent": "~5.1.2",
+        "is-binary-path": "~2.1.0",
+        "is-glob": "~4.0.1",
+        "normalize-path": "~3.0.0",
+        "readdirp": "~3.6.0"
+      },
+      "engines": {
+        "node": ">= 8.10.0"
+      },
+      "funding": {
+        "url": "https://paulmillr.com/funding/"
+      },
+      "optionalDependencies": {
+        "fsevents": "~2.3.2"
+      }
+    },
+    "node_modules/color-convert": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+      "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+      "dev": true,
+      "dependencies": {
+        "color-name": "~1.1.4"
+      },
+      "engines": {
+        "node": ">=7.0.0"
+      }
+    },
+    "node_modules/color-name": {
+      "version": "1.1.4",
+      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+      "dev": true
+    },
+    "node_modules/commander": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-4.1.1.tgz",
+      "integrity": "sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==",
+      "dev": true,
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/cross-spawn": {
+      "version": "7.0.6",
+      "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+      "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==",
+      "dev": true,
+      "dependencies": {
+        "path-key": "^3.1.0",
+        "shebang-command": "^2.0.0",
+        "which": "^2.0.1"
+      },
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/cssesc": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/cssesc/-/cssesc-3.0.0.tgz",
+      "integrity": "sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==",
+      "dev": true,
+      "bin": {
+        "cssesc": "bin/cssesc"
+      },
+      "engines": {
+        "node": ">=4"
+      }
+    },
+    "node_modules/didyoumean": {
+      "version": "1.2.2",
+      "resolved": "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz",
+      "integrity": "sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==",
+      "dev": true
+    },
+    "node_modules/dlv": {
+      "version": "1.1.3",
+      "resolved": "https://registry.npmjs.org/dlv/-/dlv-1.1.3.tgz",
+      "integrity": "sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==",
+      "dev": true
+    },
+    "node_modules/eastasianwidth": {
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/eastasianwidth/-/eastasianwidth-0.2.0.tgz",
+      "integrity": "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==",
+      "dev": true
+    },
+    "node_modules/electron-to-chromium": {
+      "version": "1.5.76",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.76.tgz",
+      "integrity": "sha512-CjVQyG7n7Sr+eBXE86HIulnL5N8xZY1sgmOPGuq/F0Rr0FJq63lg0kEtOIDfZBk44FnDLf6FUJ+dsJcuiUDdDQ==",
+      "dev": true
+    },
+    "node_modules/emoji-regex": {
+      "version": "9.2.2",
+      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-9.2.2.tgz",
+      "integrity": "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==",
+      "dev": true
+    },
+    "node_modules/escalade": {
+      "version": "3.2.0",
+      "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz",
+      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==",
+      "dev": true,
+      "engines": {
+        "node": ">=6"
+      }
+    },
+    "node_modules/fast-glob": {
+      "version": "3.3.2",
+      "resolved": "https://registry.npmjs.org/fast-glob/-/fast-glob-3.3.2.tgz",
+      "integrity": "sha512-oX2ruAFQwf/Orj8m737Y5adxDQO0LAB7/S5MnxCdTNDd4p6BsyIVsv9JQsATbTSq8KHRpLwIHbVlUNatxd+1Ow==",
+      "dev": true,
+      "dependencies": {
+        "@nodelib/fs.stat": "^2.0.2",
+        "@nodelib/fs.walk": "^1.2.3",
+        "glob-parent": "^5.1.2",
+        "merge2": "^1.3.0",
+        "micromatch": "^4.0.4"
+      },
+      "engines": {
+        "node": ">=8.6.0"
+      }
+    },
+    "node_modules/fastq": {
+      "version": "1.18.0",
+      "resolved": "https://registry.npmjs.org/fastq/-/fastq-1.18.0.tgz",
+      "integrity": "sha512-QKHXPW0hD8g4UET03SdOdunzSouc9N4AuHdsX8XNcTsuz+yYFILVNIX4l9yHABMhiEI9Db0JTTIpu0wB+Y1QQw==",
+      "dev": true,
+      "dependencies": {
+        "reusify": "^1.0.4"
+      }
+    },
+    "node_modules/fill-range": {
+      "version": "7.1.1",
+      "resolved": "https://registry.npmjs.org/fill-range/-/fill-range-7.1.1.tgz",
+      "integrity": "sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==",
+      "dev": true,
+      "dependencies": {
+        "to-regex-range": "^5.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/foreground-child": {
+      "version": "3.3.0",
+      "resolved": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.3.0.tgz",
+      "integrity": "sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==",
+      "dev": true,
+      "dependencies": {
+        "cross-spawn": "^7.0.0",
+        "signal-exit": "^4.0.1"
+      },
+      "engines": {
+        "node": ">=14"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/fraction.js": {
+      "version": "4.3.7",
+      "resolved": "https://registry.npmjs.org/fraction.js/-/fraction.js-4.3.7.tgz",
+      "integrity": "sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==",
+      "dev": true,
+      "engines": {
+        "node": "*"
+      },
+      "funding": {
+        "type": "patreon",
+        "url": "https://github.com/sponsors/rawify"
+      }
+    },
+    "node_modules/fsevents": {
+      "version": "2.3.3",
+      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+      "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
+      "dev": true,
+      "hasInstallScript": true,
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
+      }
+    },
+    "node_modules/function-bind": {
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+      "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==",
+      "dev": true,
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/glob": {
+      "version": "10.4.5",
+      "resolved": "https://registry.npmjs.org/glob/-/glob-10.4.5.tgz",
+      "integrity": "sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==",
+      "dev": true,
+      "dependencies": {
+        "foreground-child": "^3.1.0",
+        "jackspeak": "^3.1.2",
+        "minimatch": "^9.0.4",
+        "minipass": "^7.1.2",
+        "package-json-from-dist": "^1.0.0",
+        "path-scurry": "^1.11.1"
+      },
+      "bin": {
+        "glob": "dist/esm/bin.mjs"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/glob-parent": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.2.tgz",
+      "integrity": "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==",
+      "dev": true,
+      "dependencies": {
+        "is-glob": "^4.0.1"
+      },
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/hasown": {
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/hasown/-/hasown-2.0.2.tgz",
+      "integrity": "sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==",
+      "dev": true,
+      "dependencies": {
+        "function-bind": "^1.1.2"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      }
+    },
+    "node_modules/is-binary-path": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/is-binary-path/-/is-binary-path-2.1.0.tgz",
+      "integrity": "sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==",
+      "dev": true,
+      "dependencies": {
+        "binary-extensions": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/is-core-module": {
+      "version": "2.16.1",
+      "resolved": "https://registry.npmjs.org/is-core-module/-/is-core-module-2.16.1.tgz",
+      "integrity": "sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==",
+      "dev": true,
+      "dependencies": {
+        "hasown": "^2.0.2"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/is-extglob": {
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/is-extglob/-/is-extglob-2.1.1.tgz",
+      "integrity": "sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/is-fullwidth-code-point": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+      "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/is-glob": {
+      "version": "4.0.3",
+      "resolved": "https://registry.npmjs.org/is-glob/-/is-glob-4.0.3.tgz",
+      "integrity": "sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==",
+      "dev": true,
+      "dependencies": {
+        "is-extglob": "^2.1.1"
+      },
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/is-number": {
+      "version": "7.0.0",
+      "resolved": "https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz",
+      "integrity": "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.12.0"
+      }
+    },
+    "node_modules/isexe": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+      "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+      "dev": true
+    },
+    "node_modules/jackspeak": {
+      "version": "3.4.3",
+      "resolved": "https://registry.npmjs.org/jackspeak/-/jackspeak-3.4.3.tgz",
+      "integrity": "sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==",
+      "dev": true,
+      "dependencies": {
+        "@isaacs/cliui": "^8.0.2"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      },
+      "optionalDependencies": {
+        "@pkgjs/parseargs": "^0.11.0"
+      }
+    },
+    "node_modules/jiti": {
+      "version": "1.21.7",
+      "resolved": "https://registry.npmjs.org/jiti/-/jiti-1.21.7.tgz",
+      "integrity": "sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==",
+      "dev": true,
+      "bin": {
+        "jiti": "bin/jiti.js"
+      }
+    },
+    "node_modules/lilconfig": {
+      "version": "3.1.3",
+      "resolved": "https://registry.npmjs.org/lilconfig/-/lilconfig-3.1.3.tgz",
+      "integrity": "sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==",
+      "dev": true,
+      "engines": {
+        "node": ">=14"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/antonk52"
+      }
+    },
+    "node_modules/lines-and-columns": {
+      "version": "1.2.4",
+      "resolved": "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.2.4.tgz",
+      "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==",
+      "dev": true
+    },
+    "node_modules/lit": {
+      "version": "3.2.1",
+      "resolved": "https://registry.npmjs.org/lit/-/lit-3.2.1.tgz",
+      "integrity": "sha512-1BBa1E/z0O9ye5fZprPtdqnc0BFzxIxTTOO/tQFmyC/hj1O3jL4TfmLBw0WEwjAokdLwpclkvGgDJwTIh0/22w==",
+      "dependencies": {
+        "@lit/reactive-element": "^2.0.4",
+        "lit-element": "^4.1.0",
+        "lit-html": "^3.2.0"
+      }
+    },
+    "node_modules/lit-element": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/lit-element/-/lit-element-4.1.1.tgz",
+      "integrity": "sha512-HO9Tkkh34QkTeUmEdNYhMT8hzLid7YlMlATSi1q4q17HE5d9mrrEHJ/o8O2D0cMi182zK1F3v7x0PWFjrhXFew==",
+      "dependencies": {
+        "@lit-labs/ssr-dom-shim": "^1.2.0",
+        "@lit/reactive-element": "^2.0.4",
+        "lit-html": "^3.2.0"
+      }
+    },
+    "node_modules/lit-html": {
+      "version": "3.2.1",
+      "resolved": "https://registry.npmjs.org/lit-html/-/lit-html-3.2.1.tgz",
+      "integrity": "sha512-qI/3lziaPMSKsrwlxH/xMgikhQ0EGOX2ICU73Bi/YHFvz2j/yMCIrw4+puF2IpQ4+upd3EWbvnHM9+PnJn48YA==",
+      "dependencies": {
+        "@types/trusted-types": "^2.0.2"
+      }
+    },
+    "node_modules/lru-cache": {
+      "version": "10.4.3",
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-10.4.3.tgz",
+      "integrity": "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==",
+      "dev": true
+    },
+    "node_modules/merge2": {
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/merge2/-/merge2-1.4.1.tgz",
+      "integrity": "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==",
+      "dev": true,
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/micromatch": {
+      "version": "4.0.8",
+      "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+      "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==",
+      "dev": true,
+      "dependencies": {
+        "braces": "^3.0.3",
+        "picomatch": "^2.3.1"
+      },
+      "engines": {
+        "node": ">=8.6"
+      }
+    },
+    "node_modules/minimatch": {
+      "version": "9.0.5",
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-9.0.5.tgz",
+      "integrity": "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==",
+      "dev": true,
+      "dependencies": {
+        "brace-expansion": "^2.0.1"
+      },
+      "engines": {
+        "node": ">=16 || 14 >=14.17"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/minipass": {
+      "version": "7.1.2",
+      "resolved": "https://registry.npmjs.org/minipass/-/minipass-7.1.2.tgz",
+      "integrity": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==",
+      "dev": true,
+      "engines": {
+        "node": ">=16 || 14 >=14.17"
+      }
+    },
+    "node_modules/mz": {
+      "version": "2.7.0",
+      "resolved": "https://registry.npmjs.org/mz/-/mz-2.7.0.tgz",
+      "integrity": "sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==",
+      "dev": true,
+      "dependencies": {
+        "any-promise": "^1.0.0",
+        "object-assign": "^4.0.1",
+        "thenify-all": "^1.0.0"
+      }
+    },
+    "node_modules/nanoid": {
+      "version": "3.3.8",
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.8.tgz",
+      "integrity": "sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "bin": {
+        "nanoid": "bin/nanoid.cjs"
+      },
+      "engines": {
+        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
+      }
+    },
+    "node_modules/node-releases": {
+      "version": "2.0.19",
+      "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-2.0.19.tgz",
+      "integrity": "sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==",
+      "dev": true
+    },
+    "node_modules/normalize-path": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
+      "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/normalize-range": {
+      "version": "0.1.2",
+      "resolved": "https://registry.npmjs.org/normalize-range/-/normalize-range-0.1.2.tgz",
+      "integrity": "sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/object-assign": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz",
+      "integrity": "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/object-hash": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/object-hash/-/object-hash-3.0.0.tgz",
+      "integrity": "sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==",
+      "dev": true,
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/package-json-from-dist": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz",
+      "integrity": "sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==",
+      "dev": true
+    },
+    "node_modules/path-key": {
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+      "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/path-parse": {
+      "version": "1.0.7",
+      "resolved": "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz",
+      "integrity": "sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==",
+      "dev": true
+    },
+    "node_modules/path-scurry": {
+      "version": "1.11.1",
+      "resolved": "https://registry.npmjs.org/path-scurry/-/path-scurry-1.11.1.tgz",
+      "integrity": "sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==",
+      "dev": true,
+      "dependencies": {
+        "lru-cache": "^10.2.0",
+        "minipass": "^5.0.0 || ^6.0.2 || ^7.0.0"
+      },
+      "engines": {
+        "node": ">=16 || 14 >=14.18"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/picocolors": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
+      "dev": true
+    },
+    "node_modules/picomatch": {
+      "version": "2.3.1",
+      "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-2.3.1.tgz",
+      "integrity": "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==",
+      "dev": true,
+      "engines": {
+        "node": ">=8.6"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/jonschlinkert"
+      }
+    },
+    "node_modules/pify": {
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/pify/-/pify-2.3.0.tgz",
+      "integrity": "sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/pirates": {
+      "version": "4.0.6",
+      "resolved": "https://registry.npmjs.org/pirates/-/pirates-4.0.6.tgz",
+      "integrity": "sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==",
+      "dev": true,
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/postcss": {
+      "version": "8.4.49",
+      "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.4.49.tgz",
+      "integrity": "sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/postcss/"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/postcss"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "nanoid": "^3.3.7",
+        "picocolors": "^1.1.1",
+        "source-map-js": "^1.2.1"
+      },
+      "engines": {
+        "node": "^10 || ^12 || >=14"
+      }
+    },
+    "node_modules/postcss-import": {
+      "version": "15.1.0",
+      "resolved": "https://registry.npmjs.org/postcss-import/-/postcss-import-15.1.0.tgz",
+      "integrity": "sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==",
+      "dev": true,
+      "dependencies": {
+        "postcss-value-parser": "^4.0.0",
+        "read-cache": "^1.0.0",
+        "resolve": "^1.1.7"
+      },
+      "engines": {
+        "node": ">=14.0.0"
+      },
+      "peerDependencies": {
+        "postcss": "^8.0.0"
+      }
+    },
+    "node_modules/postcss-js": {
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/postcss-js/-/postcss-js-4.0.1.tgz",
+      "integrity": "sha512-dDLF8pEO191hJMtlHFPRa8xsizHaM82MLfNkUHdUtVEV3tgTp5oj+8qbEqYM57SLfc74KSbw//4SeJma2LRVIw==",
+      "dev": true,
+      "dependencies": {
+        "camelcase-css": "^2.0.1"
+      },
+      "engines": {
+        "node": "^12 || ^14 || >= 16"
+      },
+      "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/postcss/"
+      },
+      "peerDependencies": {
+        "postcss": "^8.4.21"
+      }
+    },
+    "node_modules/postcss-nested": {
+      "version": "6.2.0",
+      "resolved": "https://registry.npmjs.org/postcss-nested/-/postcss-nested-6.2.0.tgz",
+      "integrity": "sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/postcss/"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "postcss-selector-parser": "^6.1.1"
+      },
+      "engines": {
+        "node": ">=12.0"
+      },
+      "peerDependencies": {
+        "postcss": "^8.2.14"
+      }
+    },
+    "node_modules/postcss-selector-parser": {
+      "version": "6.1.2",
+      "resolved": "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-6.1.2.tgz",
+      "integrity": "sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==",
+      "dev": true,
+      "dependencies": {
+        "cssesc": "^3.0.0",
+        "util-deprecate": "^1.0.2"
+      },
+      "engines": {
+        "node": ">=4"
+      }
+    },
+    "node_modules/postcss-value-parser": {
+      "version": "4.2.0",
+      "resolved": "https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz",
+      "integrity": "sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==",
+      "dev": true
+    },
+    "node_modules/queue-microtask": {
+      "version": "1.2.3",
+      "resolved": "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz",
+      "integrity": "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/feross"
+        },
+        {
+          "type": "patreon",
+          "url": "https://www.patreon.com/feross"
+        },
+        {
+          "type": "consulting",
+          "url": "https://feross.org/support"
+        }
+      ]
+    },
+    "node_modules/read-cache": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/read-cache/-/read-cache-1.0.0.tgz",
+      "integrity": "sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==",
+      "dev": true,
+      "dependencies": {
+        "pify": "^2.3.0"
+      }
+    },
+    "node_modules/readdirp": {
+      "version": "3.6.0",
+      "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-3.6.0.tgz",
+      "integrity": "sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==",
+      "dev": true,
+      "dependencies": {
+        "picomatch": "^2.2.1"
+      },
+      "engines": {
+        "node": ">=8.10.0"
+      }
+    },
+    "node_modules/resolve": {
+      "version": "1.22.10",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.22.10.tgz",
+      "integrity": "sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w==",
+      "dev": true,
+      "dependencies": {
+        "is-core-module": "^2.16.0",
+        "path-parse": "^1.0.7",
+        "supports-preserve-symlinks-flag": "^1.0.0"
+      },
+      "bin": {
+        "resolve": "bin/resolve"
+      },
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/reusify": {
+      "version": "1.0.4",
+      "resolved": "https://registry.npmjs.org/reusify/-/reusify-1.0.4.tgz",
+      "integrity": "sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==",
+      "dev": true,
+      "engines": {
+        "iojs": ">=1.0.0",
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/run-parallel": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/run-parallel/-/run-parallel-1.2.0.tgz",
+      "integrity": "sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/feross"
+        },
+        {
+          "type": "patreon",
+          "url": "https://www.patreon.com/feross"
+        },
+        {
+          "type": "consulting",
+          "url": "https://feross.org/support"
+        }
+      ],
+      "dependencies": {
+        "queue-microtask": "^1.2.2"
+      }
+    },
+    "node_modules/shebang-command": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+      "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==",
+      "dev": true,
+      "dependencies": {
+        "shebang-regex": "^3.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/shebang-regex": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+      "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/signal-exit": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+      "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+      "dev": true,
+      "engines": {
+        "node": ">=14"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/source-map-js": {
+      "version": "1.2.1",
+      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+      "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
+      "dev": true,
+      "engines": {
+        "node": ">=0.10.0"
+      }
+    },
+    "node_modules/string-width": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
+      "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
+      "dev": true,
+      "dependencies": {
+        "eastasianwidth": "^0.2.0",
+        "emoji-regex": "^9.2.2",
+        "strip-ansi": "^7.0.1"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/string-width-cjs": {
+      "name": "string-width",
+      "version": "4.2.3",
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+      "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+      "dev": true,
+      "dependencies": {
+        "emoji-regex": "^8.0.0",
+        "is-fullwidth-code-point": "^3.0.0",
+        "strip-ansi": "^6.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/string-width-cjs/node_modules/ansi-regex": {
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/string-width-cjs/node_modules/emoji-regex": {
+      "version": "8.0.0",
+      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+      "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
+      "dev": true
+    },
+    "node_modules/string-width-cjs/node_modules/strip-ansi": {
+      "version": "6.0.1",
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+      "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+      "dev": true,
+      "dependencies": {
+        "ansi-regex": "^5.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/strip-ansi": {
+      "version": "7.1.0",
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.1.0.tgz",
+      "integrity": "sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==",
+      "dev": true,
+      "dependencies": {
+        "ansi-regex": "^6.0.1"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/strip-ansi?sponsor=1"
+      }
+    },
+    "node_modules/strip-ansi-cjs": {
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+      "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+      "dev": true,
+      "dependencies": {
+        "ansi-regex": "^5.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/strip-ansi-cjs/node_modules/ansi-regex": {
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/sucrase": {
+      "version": "3.35.0",
+      "resolved": "https://registry.npmjs.org/sucrase/-/sucrase-3.35.0.tgz",
+      "integrity": "sha512-8EbVDiu9iN/nESwxeSxDKe0dunta1GOlHufmSSXxMD2z2/tMZpDMpvXQGsc+ajGo8y2uYUmixaSRUc/QPoQ0GA==",
+      "dev": true,
+      "dependencies": {
+        "@jridgewell/gen-mapping": "^0.3.2",
+        "commander": "^4.0.0",
+        "glob": "^10.3.10",
+        "lines-and-columns": "^1.1.6",
+        "mz": "^2.7.0",
+        "pirates": "^4.0.1",
+        "ts-interface-checker": "^0.1.9"
+      },
+      "bin": {
+        "sucrase": "bin/sucrase",
+        "sucrase-node": "bin/sucrase-node"
+      },
+      "engines": {
+        "node": ">=16 || 14 >=14.17"
+      }
+    },
+    "node_modules/supports-preserve-symlinks-flag": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz",
+      "integrity": "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==",
+      "dev": true,
+      "engines": {
+        "node": ">= 0.4"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/tailwindcss": {
+      "version": "3.4.17",
+      "resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.17.tgz",
+      "integrity": "sha512-w33E2aCvSDP0tW9RZuNXadXlkHXqFzSkQew/aIa2i/Sj8fThxwovwlXHSPXTbAHwEIhBFXAedUhP2tueAKP8Og==",
+      "dev": true,
+      "dependencies": {
+        "@alloc/quick-lru": "^5.2.0",
+        "arg": "^5.0.2",
+        "chokidar": "^3.6.0",
+        "didyoumean": "^1.2.2",
+        "dlv": "^1.1.3",
+        "fast-glob": "^3.3.2",
+        "glob-parent": "^6.0.2",
+        "is-glob": "^4.0.3",
+        "jiti": "^1.21.6",
+        "lilconfig": "^3.1.3",
+        "micromatch": "^4.0.8",
+        "normalize-path": "^3.0.0",
+        "object-hash": "^3.0.0",
+        "picocolors": "^1.1.1",
+        "postcss": "^8.4.47",
+        "postcss-import": "^15.1.0",
+        "postcss-js": "^4.0.1",
+        "postcss-load-config": "^4.0.2",
+        "postcss-nested": "^6.2.0",
+        "postcss-selector-parser": "^6.1.2",
+        "resolve": "^1.22.8",
+        "sucrase": "^3.35.0"
+      },
+      "bin": {
+        "tailwind": "lib/cli.js",
+        "tailwindcss": "lib/cli.js"
+      },
+      "engines": {
+        "node": ">=14.0.0"
+      }
+    },
+    "node_modules/tailwindcss/node_modules/glob-parent": {
+      "version": "6.0.2",
+      "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-6.0.2.tgz",
+      "integrity": "sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==",
+      "dev": true,
+      "dependencies": {
+        "is-glob": "^4.0.3"
+      },
+      "engines": {
+        "node": ">=10.13.0"
+      }
+    },
+    "node_modules/tailwindcss/node_modules/postcss-load-config": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/postcss-load-config/-/postcss-load-config-4.0.2.tgz",
+      "integrity": "sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/postcss/"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "lilconfig": "^3.0.0",
+        "yaml": "^2.3.4"
+      },
+      "engines": {
+        "node": ">= 14"
+      },
+      "peerDependencies": {
+        "postcss": ">=8.0.9",
+        "ts-node": ">=9.0.0"
+      },
+      "peerDependenciesMeta": {
+        "postcss": {
+          "optional": true
+        },
+        "ts-node": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/thenify": {
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/thenify/-/thenify-3.3.1.tgz",
+      "integrity": "sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==",
+      "dev": true,
+      "dependencies": {
+        "any-promise": "^1.0.0"
+      }
+    },
+    "node_modules/thenify-all": {
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/thenify-all/-/thenify-all-1.6.0.tgz",
+      "integrity": "sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==",
+      "dev": true,
+      "dependencies": {
+        "thenify": ">= 3.1.0 < 4"
+      },
+      "engines": {
+        "node": ">=0.8"
+      }
+    },
+    "node_modules/to-regex-range": {
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/to-regex-range/-/to-regex-range-5.0.1.tgz",
+      "integrity": "sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==",
+      "dev": true,
+      "dependencies": {
+        "is-number": "^7.0.0"
+      },
+      "engines": {
+        "node": ">=8.0"
+      }
+    },
+    "node_modules/ts-interface-checker": {
+      "version": "0.1.13",
+      "resolved": "https://registry.npmjs.org/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz",
+      "integrity": "sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==",
+      "dev": true
+    },
+    "node_modules/tslib": {
+      "version": "2.8.1",
+      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "node_modules/update-browserslist-db": {
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.1.1.tgz",
+      "integrity": "sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==",
+      "dev": true,
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/browserslist"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/browserslist"
+        },
+        {
+          "type": "github",
+          "url": "https://github.com/sponsors/ai"
+        }
+      ],
+      "dependencies": {
+        "escalade": "^3.2.0",
+        "picocolors": "^1.1.0"
+      },
+      "bin": {
+        "update-browserslist-db": "cli.js"
+      },
+      "peerDependencies": {
+        "browserslist": ">= 4.21.0"
+      }
+    },
+    "node_modules/util-deprecate": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
+      "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
+      "dev": true
+    },
+    "node_modules/which": {
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+      "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
+      "dev": true,
+      "dependencies": {
+        "isexe": "^2.0.0"
+      },
+      "bin": {
+        "node-which": "bin/node-which"
+      },
+      "engines": {
+        "node": ">= 8"
+      }
+    },
+    "node_modules/wrap-ansi": {
+      "version": "8.1.0",
+      "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-8.1.0.tgz",
+      "integrity": "sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==",
+      "dev": true,
+      "dependencies": {
+        "ansi-styles": "^6.1.0",
+        "string-width": "^5.0.1",
+        "strip-ansi": "^7.0.1"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/wrap-ansi?sponsor=1"
+      }
+    },
+    "node_modules/wrap-ansi-cjs": {
+      "name": "wrap-ansi",
+      "version": "7.0.0",
+      "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+      "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+      "dev": true,
+      "dependencies": {
+        "ansi-styles": "^4.0.0",
+        "string-width": "^4.1.0",
+        "strip-ansi": "^6.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/wrap-ansi?sponsor=1"
+      }
+    },
+    "node_modules/wrap-ansi-cjs/node_modules/ansi-regex": {
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+      "dev": true,
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/wrap-ansi-cjs/node_modules/ansi-styles": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
+      "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+      "dev": true,
+      "dependencies": {
+        "color-convert": "^2.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+      }
+    },
+    "node_modules/wrap-ansi-cjs/node_modules/emoji-regex": {
+      "version": "8.0.0",
+      "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+      "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
+      "dev": true
+    },
+    "node_modules/wrap-ansi-cjs/node_modules/string-width": {
+      "version": "4.2.3",
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+      "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+      "dev": true,
+      "dependencies": {
+        "emoji-regex": "^8.0.0",
+        "is-fullwidth-code-point": "^3.0.0",
+        "strip-ansi": "^6.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/wrap-ansi-cjs/node_modules/strip-ansi": {
+      "version": "6.0.1",
+      "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+      "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+      "dev": true,
+      "dependencies": {
+        "ansi-regex": "^5.0.1"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/yaml": {
+      "version": "2.6.1",
+      "resolved": "https://registry.npmjs.org/yaml/-/yaml-2.6.1.tgz",
+      "integrity": "sha512-7r0XPzioN/Q9kXBro/XPnA6kznR73DHq+GXh5ON7ZozRO6aMjbmiBuKste2wslTFkC5d1dw0GooOCepZXJ2SAg==",
+      "dev": true,
+      "bin": {
+        "yaml": "bin.mjs"
+      },
+      "engines": {
+        "node": ">= 14"
+      }
+    }
+  }
+}
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\package.json
+================================================================================
+
+{
+  "name": "receipts-manager",
+  "version": "1.0.0",
+  "description": "System zarządzania paragonami",
+  "scripts": {
+    "build": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --minify",
+    "watch": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --watch",
+    "dev": "npm run watch",
+    "clean": "rm -f ./src/web/static/css/main.css",
+    "build:prod": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "@material/web": "^1.0.0"
+  }
+}
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\postcss.config.js
+================================================================================
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\project_files_20241230_193653.txt
+================================================================================
+
+=== Project Files Collection (20241230_193653) ===
+
+
+================================================================================
+File: src/config.py
+================================================================================
+import os
+from pathlib import Path
+
+
+class Config:
+    # Podstawowa konfiguracja
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
+
+    # Konfiguracja bazy danych
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    DATABASE_PATH = BASE_DIR / 'data' / 'zakupy.db'
+    SQLALCHEMY_DATABASE_URI = f'sqlite:///{DATABASE_PATH}'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Konfiguracja uploadów
+    UPLOAD_FOLDER = BASE_DIR / 'data' / 'uploads'
+    RECEIPTS_FOLDER = BASE_DIR / 'data' / 'receipts'
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max-limit
+
+    # Konfiguracja logowania
+    LOG_FILE = BASE_DIR / 'logs' / 'smart_zapasy.log'
+    LOG_LEVEL = 'INFO'
+
+    # Google Cloud Vision API
+    GOOGLE_CLOUD_CREDENTIALS = BASE_DIR / 'config' / 'credentials' / 'google-cloud-vision.json'
+
+    def __init__(self):
+        # Upewnij się, że wymagane katalogi istnieją
+        self.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+        self.RECEIPTS_FOLDER.mkdir(parents=True, exist_ok=True)
+        Path(self.LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+
+================================================================================
+File: .env
+================================================================================
+FLASK_APP=src.web:create_app
+FLASK_ENV=development
+FLASK_DEBUG=True
+SECRET_KEY=dev-key-change-in-production
+DATABASE_URL=sqlite:///data/zakupy.db
+
+================================================================================
+File: requirements.txt
+================================================================================
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-WTF==1.2.1
+google-cloud-vision==3.5.0
+Pillow==10.1.0
+python-dotenv==1.0.0
+Werkzeug==3.0.1
+pytest==8.0.0
+tailwindcss==3.4.1
+
+================================================================================
+File: setup.py
+================================================================================
+from setuptools import setup, find_packages
+
+setup(
+    name="receipts-manager",
+    version="0.1",
+    packages=find_packages(),
+    install_requires=[
+        'flask',
+        'flask-sqlalchemy',
+        'flask-migrate',
+        'flask-wtf',
+        'python-dotenv',
+        'Pillow',
+        'google-cloud-vision'
+    ],
+)
+
+================================================================================
+File: package.json
+================================================================================
+{
+  "name": "receipts-manager",
+  "version": "1.0.0",
+  "description": "System zarządzania paragonami",
+  "scripts": {
+    "build": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --minify",
+    "watch": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --watch",
+    "dev": "npm run watch",
+    "clean": "rm -f ./src/web/static/css/main.css",
+    "build:prod": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "@material/web": "^1.0.0"
+  }
+}
+
+================================================================================
+File: tailwind.config.js
+================================================================================
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/web/templates/**/*.html",
+    "./src/web/static/js/**/*.js",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Rozszerzone kolory primary
+        'primary': {
+          50: '#F3E5F5',
+          100: '#E1BEE7',
+          200: '#CE93D8',
+          300: '#BA68C8',
+          400: '#AB47BC',
+          500: '#9C27B0', // Bazowy kolor primary
+          600: '#8E24AA',
+          700: '#7B1FA2',
+          800: '#6A1B9A',
+          900: '#4A148C',
+          // Nowe odcienie
+          'light': '#B868C8',
+          'dark': '#6A1B9A',
+          'accent': '#F3E5F5',
+        },
+        
+        // Rozszerzone kolory secondary
+        'secondary': {
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50', // Bazowy kolor secondary
+          600: '#43A047',
+          700: '#388E3C',
+          800: '#2E7D32',
+          900: '#1B5E20',
+          // Nowe odcienie
+          'light': '#81C784',
+          'dark': '#2E7D32',
+          'accent': '#E8F5E9',
+        },
+        
+        // Rozszerzone kolory błędów, ostrzeżeń itp.
+        'error': {
+          50: '#FFEBEE',
+          100: '#FFCDD2',
+          200: '#EF9A9A',
+          300: '#E57373',
+          400: '#EF5350',
+          500: '#F44336', // Bazowy kolor błędu
+          600: '#E53935',
+          700: '#D32F2F',
+          800: '#C62828',
+          900: '#B71C1C',
+        },
+        
+        'warning': {
+          50: '#FFF3E0',
+          100: '#FFE0B2',
+          200: '#FFCD85',
+          300: '#FFB74D',
+          400: '#FFA726',
+          500: '#FF9800', // Bazowy kolor ostrzeżenia
+          600: '#FB8C00',
+          700: '#F57C00',
+          800: '#EF6C00',
+          900: '#E65100',
+        },
+        
+        'success': {
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50', // Bazowy kolor sukcesu
+          600: '#43A047',
+          700: '#388E3C',
+          800: '#2E7D32',
+          900: '#1B5E20',
+        },
+        
+        // Neutralne kolory
+        'neutral': {
+          50: '#FAFAFA',
+          100: '#F5F5F5',
+          200: '#EEEEEE',
+          300: '#E0E0E0',
+          400: '#BDBDBD',
+          500: '#9E9E9E',
+          600: '#757575',
+          700: '#616161',
+          800: '#424242',
+          900: '#212121',
+        },
+        
+        'background': '#FFFFFF',
+        'surface': '#FFFFFF',
+      },
+      
+      // Pozostałe rozszerzenia jak poprzednio...
+      borderRadius: {
+        'material-sm': '4px',
+        'material-md': '8px',
+        'material-lg': '16px',
+      },
+      boxShadow: {
+        'material-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+        'material-2': '0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)',
+        'material-3': '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
+        'material-4': '0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)',
+        'material-5': '0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22)',
+      },
+      spacing: {
+        'material-1': '4px',
+        'material-2': '8px',
+        'material-3': '16px',
+        'material-4': '24px',
+        'material-5': '32px',
+        'material-6': '40px',
+      },
+    },
+  },
+  plugins: [],
+}
+
+================================================================================
+File: postcss.config.js
+================================================================================
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+
+================================================================================
+File: src/web/__init__.py
+================================================================================
+from flask import Flask
+from src.database import db, migrate
+from src.config import Config
+import logging
+
+
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    # Inicjalizacja rozszerzeń
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Konfiguracja logowania
+    logging.basicConfig(
+        filename=app.config.get('LOG_FILE', 'app.log'),
+        level=app.config.get('LOG_LEVEL', logging.INFO),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Rejestracja blueprintów
+    from .views import bp as receipts_bp
+    from .error_handlers import errors as errors_bp
+
+    app.register_blueprint(receipts_bp)
+    app.register_blueprint(errors_bp)
+
+    return app
+
+================================================================================
+File: src/database/__init__.py
+================================================================================
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+# Inicjalizacja obiektów SQLAlchemy i Migrate
+db = SQLAlchemy()
+migrate = Migrate()
+
+
+def init_app(app):
+    """Initialize database and migrations."""
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Import models to ensure they are registered with SQLAlchemy
+    from . import models  # noqa
+
+    # Create tables if they don't exist (development only)
+    if app.config['FLASK_ENV'] == 'development':
+        with app.app_context():
+            db.create_all()
+
+    return db
+
+================================================================================
+File: src/database/models.py
+================================================================================
+from datetime import datetime
+from sqlalchemy.sql import func
+from src.database import db
+
+
+class BaseModel(db.Model):
+    """Base model class for common columns and methods."""
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    def save(self):
+        """Save the model instance to database."""
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    def delete(self):
+        """Delete the model instance from database."""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+
+class Category(BaseModel):
+    """Model representing product categories."""
+    __tablename__ = 'categories'
+
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    products = db.relationship('Product', back_populates='category', lazy='dynamic')
+
+    def __repr__(self):
+        return f"<Category {self.name}>"
+
+
+class Receipt(BaseModel):
+    """Model representing shopping receipts."""
+    __tablename__ = 'receipts'
+
+    purchase_date = db.Column(db.Date, nullable=False)
+    store_name = db.Column(db.String(200), nullable=False)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='new')  # new, processing, verified
+    ocr_text = db.Column(db.Text, nullable=True)  # Raw OCR text
+
+    # Relationships
+    products = db.relationship(
+        'Product',
+        back_populates='receipt',
+        lazy='dynamic',
+        cascade='all, delete-orphan'  # Dodane kaskadowe usuwanie
+    )
+
+    def __repr__(self):
+        return f"<Receipt {self.store_name} {self.purchase_date}>"
+
+
+class Product(BaseModel):
+    """Model representing products from receipts."""
+    __tablename__ = 'products'
+
+    name = db.Column(db.String(200), nullable=False)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    quantity = db.Column(db.Numeric(10, 3), nullable=False)  # Allow for fractional quantities
+    unit = db.Column(db.String(20), nullable=True)  # kg, szt, l, etc.
+    expiry_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default='active')  # active, consumed
+
+    # Foreign keys
+    receipt_id = db.Column(db.Integer, db.ForeignKey('receipts.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+
+    # Relationships
+    receipt = db.relationship('Receipt', back_populates='products')
+    category = db.relationship('Category', back_populates='products')
+
+    def __repr__(self):
+        return f"<Product {self.name} {self.quantity}{self.unit}>"
+
+================================================================================
+File: src/web/views.py
+================================================================================
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    flash,
+    redirect,
+    url_for,
+    current_app,
+    jsonify
+)
+from src.database.models import Receipt, Product, Category
+from src.database import db
+from .forms import ReceiptUploadForm, ReceiptVerificationForm
+import logging
+from sqlalchemy import func
+from datetime import datetime
+from werkzeug.utils import secure_filename
+import os
+
+# Konfiguracja loggera
+logger = logging.getLogger(__name__)
+
+# Tworzenie blueprintów
+bp = Blueprint('receipts', __name__, url_prefix='/receipts')
+errors = Blueprint('errors', __name__)
+
+# Obsługa błędów
+@errors.app_errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@errors.app_errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
+
+@errors.app_errorhandler(403)
+def forbidden_error(error):
+    return render_template('errors/403.html'), 403
+
+# Widoki główne
+@bp.route('/')
+def index():
+    """Strona główna aplikacji."""
+    return render_template('index.html')
+
+@bp.route('/list')
+def receipt_list():
+    """Lista wszystkich paragonów."""
+    receipts = Receipt.query.order_by(Receipt.purchase_date.desc()).all()
+    return render_template('receipt_list.html', receipts=receipts)
+
+@bp.route('/upload', methods=['GET', 'POST'])
+def upload():
+    """Widok do uploadowania nowego paragonu."""
+    form = ReceiptUploadForm()
+    if form.validate_on_submit():
+        try:
+            # Zapisywanie pliku
+            file = form.receipt_image.data
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            # Tworzenie nowego paragonu
+            receipt = Receipt(
+                store_name=form.store_name.data,
+                purchase_date=datetime.now().date(),
+                total_amount=0,
+                status='new'
+            )
+            receipt.save()
+
+            flash('Paragon został pomyślnie dodany.', 'success')
+            return redirect(url_for('receipts.verify_receipt', receipt_id=receipt.id))
+        except Exception as e:
+            logger.error(f"Błąd podczas uploadu paragonu: {str(e)}")
+            flash('Wystąpił błąd podczas uploadu paragonu.', 'error')
+
+    return render_template('upload.html', form=form)
+
+@bp.route('/verify/<int:receipt_id>', methods=['GET', 'POST'])
+def verify_receipt(receipt_id):
+    """Widok do weryfikacji danych z paragonu."""
+    receipt = Receipt.query.get_or_404(receipt_id)
+    categories = Category.query.order_by(Category.name).all()
+
+    if request.method == 'GET':
+        form_data = {
+            'receipt_id': receipt.id,
+            'store_name': receipt.store_name,
+            'purchase_date': receipt.purchase_date,
+            'total_amount': receipt.total_amount,
+            'products': [{
+                'id': product.id,
+                'name': product.name,
+                'unit_price': product.unit_price,
+                'quantity': product.quantity,
+                'unit': product.unit,
+                'category_id': product.category_id or 0,
+                'expiry_date': product.expiry_date
+            } for product in receipt.products]
+        }
+        form = ReceiptVerificationForm(data=form_data, categories=categories)
+    else:
+        form = ReceiptVerificationForm(categories=categories)
+        if form.validate_on_submit():
+            try:
+                receipt.store_name = form.store_name.data
+                receipt.purchase_date = form.purchase_date.data
+                receipt.total_amount = form.total_amount.data
+                receipt.status = 'verified'
+
+                existing_product_ids = {p.id for p in receipt.products}
+                form_product_ids = {
+                    int(p['id'].data) for p in form.products
+                    if p['id'].data
+                }
+
+                # Usuwanie produktów, których nie ma w formularzu
+                for product in receipt.products:
+                    if product.id not in form_product_ids:
+                        db.session.delete(product)
+
+                # Aktualizacja/dodawanie produktów
+                for product_form in form.products:
+                    product_id = product_form['id'].data
+                    if product_id:
+                        product = Product.query.get(product_id)
+                        if product:
+                            product.name = product_form['name'].data
+                            product.unit_price = product_form['unit_price'].data
+                            product.quantity = product_form['quantity'].data
+                            product.unit = product_form['unit'].data
+                            product.category_id = product_form['category_id'].data or None
+                            product.expiry_date = product_form['expiry_date'].data
+                    else:
+                        product = Product(
+                            receipt_id=receipt.id,
+                            name=product_form['name'].data,
+                            unit_price=product_form['unit_price'].data,
+                            quantity=product_form['quantity'].data,
+                            unit=product_form['unit'].data,
+                            category_id=product_form['category_id'].data or None,
+                            expiry_date=product_form['expiry_date'].data
+                        )
+                        db.session.add(product)
+
+                db.session.commit()
+                flash('Paragon został pomyślnie zweryfikowany.', 'success')
+                return redirect(url_for('receipts.receipt_list'))
+
+            except Exception as e:
+                logger.error(f"Błąd podczas zapisywania danych: {str(e)}")
+                db.session.rollback()
+                flash('Wystąpił błąd podczas zapisywania danych.', 'error')
+
+    return render_template('verify.html', form=form, receipt=receipt)
+
+@bp.route('/api/products/suggestions', methods=['GET'])
+def get_product_suggestions():
+    """Endpoint API zwracający sugestie nazw produktów."""
+    query = request.args.get('query', '').lower()
+    if len(query) < 2:
+        return jsonify([])
+
+    # Pobierz unikalne nazwy produktów pasujące do zapytania
+    suggestions = Product.query\
+        .with_entities(Product.name, Product.unit, Product.category_id)\
+        .filter(func.lower(Product.name).contains(query))\
+        .group_by(Product.name, Product.unit, Product.category_id)\
+        .order_by(func.count(Product.id).desc())\
+        .limit(10)\
+        .all()
+
+    # Przygotuj dane do odpowiedzi
+    results = [{
+        'name': suggestion.name,
+        'unit': suggestion.unit,
+        'category_id': suggestion.category_id
+    } for suggestion in suggestions]
+
+    return jsonify(results)
+
+@bp.route('/<int:receipt_id>', methods=['DELETE'])
+def delete_receipt(receipt_id):
+    """Endpoint do usuwania paragonu."""
+    try:
+        receipt = Receipt.query.get_or_404(receipt_id)
+        
+        # Zabezpieczenie przed przypadkowym usunięciem zweryfikowanego paragonu
+        if receipt.status == 'verified':
+            return jsonify({
+                'success': False,
+                'message': 'Nie można usunąć zweryfikowanego paragonu.'
+            }), 403
+            
+        # Usuwanie powiązanego pliku
+        if receipt.image_filename:
+            try:
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], receipt.image_filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                logger.warning(f"Nie udało się usunąć pliku paragonu: {str(e)}")
+
+        receipt.delete()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Paragon został pomyślnie usunięty.'
+        })
+    except Exception as e:
+        logger.error(f"Błąd podczas usuwania paragonu: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'Wystąpił błąd podczas usuwania paragonu.'
+        }), 500
+
+================================================================================
+File: src/web/forms.py
+================================================================================
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from wtforms import StringField, DecimalField, DateField, SelectField, FormField, FieldList, HiddenField
+from wtforms.validators import DataRequired, Length, Optional, NumberRange
+from datetime import date
+
+class ProductForm(FlaskForm):
+    """Formularz dla pojedynczego produktu z paragonu."""
+    id = HiddenField('ID')
+    name = StringField(
+        'Nazwa produktu',
+        validators=[
+            DataRequired(message='Nazwa produktu jest wymagana'),
+            Length(min=2, max=200, message='Nazwa produktu musi mieć od 2 do 200 znaków')
+        ]
+    )
+    unit_price = DecimalField(
+        'Cena jednostkowa',
+        validators=[
+            DataRequired(message='Cena jest wymagana'),
+            NumberRange(min=0, message='Cena musi być większa od 0')
+        ],
+        places=2
+    )
+    quantity = DecimalField(
+        'Ilość',
+        validators=[
+            DataRequired(message='Ilość jest wymagana'),
+            NumberRange(min=0, message='Ilość musi być większa od 0')
+        ],
+        places=3
+    )
+    unit = StringField(
+        'Jednostka',
+        validators=[Optional(), Length(max=20)]
+    )
+    category_id = SelectField(
+        'Kategoria',
+        validators=[Optional()],
+        coerce=int,
+        choices=[]
+    )
+    expiry_date = DateField(
+        'Data ważności',
+        validators=[Optional()]
+    )
+
+    class Meta:
+        csrf = False
+
+class ReceiptVerificationForm(FlaskForm):
+    """Formularz do weryfikacji danych z paragonu."""
+    receipt_id = HiddenField('ID Paragonu')
+    store_name = StringField(
+        'Nazwa sklepu',
+        validators=[
+            DataRequired(message='Nazwa sklepu jest wymagana'),
+            Length(min=2, max=200, message='Nazwa sklepu musi mieć od 2 do 200 znaków')
+        ]
+    )
+    purchase_date = DateField(
+        'Data zakupu',
+        validators=[DataRequired(message='Data zakupu jest wymagana')]
+    )
+    total_amount = DecimalField(
+        'Suma',
+        validators=[
+            DataRequired(message='Suma jest wymagana'),
+            NumberRange(min=0, message='Suma musi być większa od 0')
+        ],
+        places=2
+    )
+    products = FieldList(FormField(ProductForm), min_entries=1)
+
+    def __init__(self, *args, categories=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if categories:
+            choices = [(0, '-- Wybierz kategorię --')] + [(c.id, c.name) for c in categories]
+            for product_form in self.products:
+                product_form.category_id.choices = choices
+
+class ReceiptUploadForm(FlaskForm):
+    """Formularz do uploadu nowego paragonu."""
+    store_name = StringField(
+        'Nazwa sklepu',
+        validators=[
+            DataRequired(message='Nazwa sklepu jest wymagana'),
+            Length(min=2, max=200, message='Nazwa sklepu musi mieć od 2 do 200 znaków')
+        ]
+    )
+    
+    purchase_date = DateField(
+        'Data zakupu',
+        validators=[DataRequired(message='Data zakupu jest wymagana')],
+        default=date.today
+    )
+    
+    receipt_image = FileField(
+        'Zdjęcie paragonu',
+        validators=[
+            FileRequired(message='Plik jest wymagany'),
+            FileAllowed(['jpg', 'jpeg', 'png'], message='Dozwolone są tylko pliki obrazów (jpg, jpeg, png)')
+        ]
+    )
+
+================================================================================
+File: src/web/error_handlers.py
+================================================================================
+from flask import Blueprint, render_template
+from src.database import db
+
+errors = Blueprint('errors', __name__)
+
+@errors.app_errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@errors.app_errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
+
+@errors.app_errorhandler(403)
+def forbidden_error(error):
+    return render_template('errors/403.html'), 403
+
+================================================================================
+File: src/web/static/js/ReceiptVerificationForm.js
+================================================================================
+/**
+ * ReceiptVerificationForm.js
+ * Obsługa formularza weryfikacji paragonów
+ */
+
+class ReceiptVerificationForm {
+    constructor() {
+        this.form = document.getElementById('verifyForm');
+        if (!this.form) {
+            console.warn('Element #verifyForm nie został znaleziony w DOM.');
+            return;
+        }
+        this.productsContainer = document.getElementById('products-container');
+        this.totalInput = document.getElementById('total_amount');
+
+        this.initializeEventListeners();
+        this.initializeExistingProducts();
+    }
+
+    initializeEventListeners() {
+        let debounceTimeout;
+        this.form.addEventListener('input', (e) => {
+            if (e.target.classList.contains('price-input') ||
+                e.target.classList.contains('quantity-input')) {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => this.updateTotalAmount(), 300);
+            }
+        });
+
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    }
+
+    initializeExistingProducts() {
+        document.querySelectorAll('.product-name').forEach(input => {
+            this.initializeAutocomplete(input);
+        });
+
+        this.updateTotalAmount();
+    }
+
+    async initializeAutocomplete(input) {
+        let timeout = null;
+        
+        input.addEventListener('input', async (e) => {
+            clearTimeout(timeout);
+            const query = e.target.value;
+            
+            if (query.length < 2) return;
+            
+            timeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/receipts/api/products/suggestions?query=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const suggestions = await response.json();
+                    if (suggestions.length > 0) {
+                        const productItem = input.closest('.product-item');
+                        this.fillProductDetails(productItem, suggestions[0]);
+                    }
+                } catch (error) {
+                    console.error('Błąd podczas pobierania sugestii:', error);
+                    this.showNotification('error', 'Nie udało się pobrać sugestii produktów');
+                }
+            }, 300);
+        });
+    }
+
+    fillProductDetails(productItem, suggestion) {
+        const unitInput = productItem.querySelector('[name$="unit"]');
+        const categorySelect = productItem.querySelector('[name$="category_id"]');
+        
+        if (unitInput) unitInput.value = suggestion.unit || '';
+        if (categorySelect) categorySelect.value = suggestion.category_id || '0';
+    }
+
+    addProduct() {
+        const template = document.getElementById('product-template');
+        const productsCount = document.querySelectorAll('.product-item').length;
+        
+        const newProduct = template.content.cloneNode(true);
+        
+        const fields = newProduct.querySelectorAll('input, select');
+        fields.forEach(field => {
+            const name = field.getAttribute('name');
+            if (name) {
+                field.setAttribute('name', name.replace(/\d+/, productsCount.toString()));
+            }
+        });
+        
+        this.productsContainer.appendChild(newProduct);
+        
+        const nameInput = this.productsContainer.lastElementChild.querySelector('.product-name');
+        if (nameInput) {
+            this.initializeAutocomplete(nameInput);
+        }
+        
+        this.updateTotalAmount();
+    }
+
+    removeProduct(button) {
+        const productItem = button.closest('.product-item');
+        
+        productItem.style.opacity = '0';
+        setTimeout(() => {
+            productItem.remove();
+            this.updateTotalAmount();
+        }, 300);
+    }
+
+    updateTotalAmount() {
+        const products = document.querySelectorAll('.product-item');
+        let total = 0;
+        
+        products.forEach(product => {
+            const price = parseFloat(product.querySelector('.price-input')?.value) || 0;
+            const quantity = parseFloat(product.querySelector('.quantity-input')?.value) || 0;
+            total += price * quantity;
+        });
+        
+        if (this.totalInput) {
+            this.totalInput.value = total.toFixed(2);
+        }
+    }
+
+    async handleSubmit(e) {
+        e.preventDefault();
+        
+        try {
+            const response = await fetch(this.form.action, {
+                method: 'POST',
+                body: new FormData(this.form)
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.showNotification('success', 'Paragon został pomyślnie zapisany');
+                setTimeout(() => {
+                    window.location.href = '/receipts/list';
+                }, 1500);
+            } else {
+                this.showNotification('error', data.message || 'Wystąpił błąd podczas zapisywania paragonu');
+            }
+        } catch (error) {
+            console.error('Błąd podczas zapisywania:', error);
+            this.showNotification('error', 'Wystąpił błąd podczas zapisywania paragonu');
+        }
+    }
+
+    showNotification(type, message) {
+        const container = document.getElementById('notification-container');
+        const notification = document.createElement('div');
+        notification.className = `md-alert md-alert-${type} animate-bounce-in`;
+        notification.textContent = message;
+
+        container.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('animate-fade-out');
+            notification.addEventListener('animationend', () => notification.remove(), { once: true });
+        }, 5000);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const formElement = document.getElementById('verifyForm');
+    if (!formElement) {
+        console.warn('Element #verifyForm nie istnieje. Sprawdź HTML i upewnij się, że formularz został załadowany.');
+        return;
+    }
+    window.receiptForm = new ReceiptVerificationForm();
+});
+
+window.addProduct = () => window.receiptForm?.addProduct();
+window.removeProduct = (button) => window.receiptForm?.removeProduct(button);
+
+
+================================================================================
+File: src/web/static/js/ReceiptVerificationForm.jsx
+================================================================================
+import React, { useState } from 'react';
+
+const ReceiptVerificationForm = ({ initialData }) => {
+    const [formData, setFormData] = useState({
+        store: initialData.store || '',
+        date: initialData.date || new Date().toISOString().split('T')[0],
+        products: initialData.products.map(product => ({
+            ...product,
+            expiry_date: '',  // nowe pole
+            notes: '',        // nowe pole
+            current_quantity: product.quantity // początkowo taka sama jak quantity
+        })) || [],
+        total: initialData.total || 0
+    });
+
+    const handleProductChange = (index, field, value) => {
+        const newProducts = [...formData.products];
+        newProducts[index] = {
+            ...newProducts[index],
+            [field]: value
+        };
+        setFormData({
+            ...formData,
+            products: newProducts
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                window.location.href = '/receipts';
+            } else {
+                const error = await response.json();
+                alert(`Błąd: ${error.message}`);
+            }
+        } catch (error) {
+            alert('Wystąpił błąd podczas zapisywania danych');
+        }
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white shadow rounded-lg p-6">
+                    <h2 className="text-xl font-bold mb-4">Weryfikacja paragonu</h2>
+
+                    {/* Dane podstawowe */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Sklep</label>
+                            <input
+                                type="text"
+                                value={formData.store}
+                                onChange={(e) => setFormData({...formData, store: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Data</label>
+                            <input
+                                type="date"
+                                value={formData.date}
+                                onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Lista produktów */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Produkty</h3>
+                        {formData.products.map((product, index) => (
+                            <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Nazwa</label>
+                                        <input
+                                            type="text"
+                                            value={product.name}
+                                            onChange={(e) => handleProductChange(index, 'name', e.target.value)}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Ilość</label>
+                                        <input
+                                            type="number"
+                                            step="0.001"
+                                            value={product.quantity}
+                                            onChange={(e) => handleProductChange(index, 'quantity', parseFloat(e.target.value))}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Jednostka</label>
+                                        <select
+                                            value={product.unit}
+                                            onChange={(e) => handleProductChange(index, 'unit', e.target.value)}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                            required
+                                        >
+                                            <option value="szt">szt</option>
+                                            <option value="kg">kg</option>
+                                            <option value="g">g</option>
+                                            <option value="l">l</option>
+                                            <option value="ml">ml</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Cena</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={product.price}
+                                            onChange={(e) => handleProductChange(index, 'price', parseFloat(e.target.value))}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Data ważności</label>
+                                        <input
+                                            type="date"
+                                            value={product.expiry_date}
+                                            onChange={(e) => handleProductChange(index, 'expiry_date', e.target.value)}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700">Notatki</label>
+                                        <textarea
+                                            value={product.notes}
+                                            onChange={(e) => handleProductChange(index, 'notes', e.target.value)}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                            rows="2"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Suma */}
+                    <div className="mt-6">
+                        <label className="block text-sm font-medium text-gray-700">Suma</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={formData.total}
+                            onChange={(e) => setFormData({...formData, total: parseFloat(e.target.value)})}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            required
+                        />
+                    </div>
+
+                    {/* Przyciski */}
+                    <div className="mt-6 flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onClick={() => window.location.href = '/receipts'}
+                            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                            Anuluj
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                            Zapisz
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default ReceiptVerificationForm;
+
+================================================================================
+File: src/web/static/css/style.css
+================================================================================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: Roboto, system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  /* Rozszerzone komponenty Card */
+  .md-card {
+    @apply bg-white rounded-material-md shadow-material-1 p-4 transition-all duration-300 
+           hover:shadow-material-2 transform hover:-translate-y-1 
+           focus-within:ring-2 focus-within:ring-primary-500;
+  }
+
+  .md-card-hover {
+    @apply relative overflow-hidden;
+  }
+
+  .md-card-hover::before {
+    content: '';
+    @apply absolute inset-0 bg-primary-500 opacity-0 transition-opacity duration-300;
+  }
+
+  .md-card-hover:hover::before {
+    @apply opacity-10;
+  }
+
+  /* Rozbudowane komponenty Button */
+  .md-button {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-material-sm
+           font-medium text-white bg-primary-500 hover:bg-primary-600 
+           active:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed
+           transition-all duration-200 ease-in-out focus:outline-none 
+           focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           transform active:scale-95 hover:shadow-material-1;
+  }
+
+  .md-button-icon {
+    @apply p-2 rounded-full hover:bg-gray-100 transition-colors duration-200;
+  }
+
+  /* Zaawansowane komponenty Form */
+  .md-input-wrapper {
+    @apply relative;
+  }
+
+  .md-input-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400;
+  }
+
+  .md-input-with-icon {
+    @apply pl-10;
+  }
+
+  /* Komponenty Loading */
+  .md-spinner {
+    @apply inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin;
+  }
+
+  /* Komponenty Transition */
+  .md-fade-enter {
+    @apply opacity-0;
+  }
+
+  .md-fade-enter-active {
+    @apply transition-opacity duration-300 ease-out;
+  }
+
+  .md-fade-enter-to {
+    @apply opacity-100;
+  }
+
+  /* Komponenty Progress */
+  .md-progress-bar {
+    @apply w-full h-1 bg-gray-200 overflow-hidden;
+  }
+
+  .md-progress-bar-fill {
+    @apply h-full bg-primary-500 transition-all duration-300 ease-in-out;
+  }
+
+  /* Komponenty Tooltip */
+  .md-tooltip {
+    @apply absolute z-50 px-3 py-1 text-sm text-white bg-gray-800 rounded-material-sm 
+           opacity-0 invisible transition-all duration-200 ease-in-out
+           group-hover:opacity-100 group-hover:visible;
+  }
+
+  /* Awaryjne stany komponentów */
+  .md-disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  }
+
+  /* Komponenty Audio/Video */
+  .md-media-control {
+    @apply bg-primary-500 text-white rounded-full p-2 hover:bg-primary-600 
+           transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  /* Utility dla animacji */
+  .animate-bounce-in {
+    animation: bounce-in 0.5s ease-in-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.5s ease-out;
+  }
+
+  /* Utility dla elevation */
+  .elevation-hover {
+    @apply transition-shadow duration-300 hover:shadow-material-3;
+  }
+
+  /* Utility dla responsywności */
+  .max-w-screen-content {
+    max-width: 1440px;
+  }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.5); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  0% { 
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Dodatkowe accessibility i dark mode */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* Komponenty powiadomień */
+.md-alert {
+  @apply p-4 rounded-lg shadow-material-1 bg-white flex items-start space-x-3;
+  max-width: 24rem;
+}
+
+.md-alert-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.md-alert-error {
+  @apply bg-error-100 text-error-800;
+}
+
+.md-alert-warning {
+  @apply bg-warning-100 text-warning-800;
+}
+
+.md-alert-info {
+  @apply bg-primary-100 text-primary-800;
+}
+
+/* Animacje dla powiadomień */
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-fade-out {
+  animation: fade-out 0.5s ease-in-out forwards;
+}
+}
+
+================================================================================
+File: src/web/static/css/main.css
+================================================================================
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}html{font-family:Roboto,system-ui,sans-serif;scroll-behavior:smooth}body{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1));--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1));-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.md-card{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));border-radius:8px;--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1));padding:1rem;--tw-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);--tw-shadow-colored:0 1px 3px var(--tw-shadow-color),0 1px 2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow);transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.3s}.md-card:focus-within{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000);--tw-ring-opacity:1;--tw-ring-color:rgb(156 39 176/var(--tw-ring-opacity,1))}.md-card:hover{--tw-translate-y:-0.25rem;--tw-shadow:0 3px 6px rgba(0,0,0,.15),0 2px 4px rgba(0,0,0,.12);--tw-shadow-colored:0 3px 6px var(--tw-shadow-color),0 2px 4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.md-button,.md-card:hover{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.md-button{display:inline-flex;align-items:center;justify-content:center;border-radius:4px;--tw-bg-opacity:1;background-color:rgb(156 39 176/var(--tw-bg-opacity,1));padding:.5rem 1rem;font-weight:500;--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1));transition-property:all;transition-duration:.2s;transition-timing-function:cubic-bezier(.4,0,.2,1)}.md-button:hover{--tw-bg-opacity:1;background-color:rgb(142 36 170/var(--tw-bg-opacity,1));--tw-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);--tw-shadow-colored:0 1px 3px var(--tw-shadow-color),0 1px 2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.md-button:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000);--tw-ring-opacity:1;--tw-ring-color:rgb(156 39 176/var(--tw-ring-opacity,1));--tw-ring-offset-width:2px}.md-button:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-bg-opacity:1;background-color:rgb(123 31 162/var(--tw-bg-opacity,1))}.md-button:disabled{cursor:not-allowed;--tw-bg-opacity:1;background-color:rgb(209 213 219/var(--tw-bg-opacity,1))}.md-button-icon{border-radius:9999px;padding:.5rem;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s}.md-button-icon:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.static{position:static}.fixed{position:fixed}.inset-0{inset:0}.left-2{left:.5rem}.right-6{right:1.5rem}.top-2{top:.5rem}.top-20{top:5rem}.z-50{z-index:50}.col-span-full{grid-column:1/-1}.mx-auto{margin-left:auto;margin-right:auto}.my-4{margin-top:1rem;margin-bottom:1rem}.mb-0{margin-bottom:0}.mb-1{margin-bottom:.25rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-auto{margin-left:auto}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.hidden{display:none}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-auto{height:auto}.min-h-screen{min-height:100vh}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-full{max-width:100%}.max-w-md{max-width:28rem}.max-w-screen-xl{max-width:1280px}.flex-grow{flex-grow:1}.-translate-y-full{--tw-translate-y:-100%}.-translate-y-full,.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.5rem*var(--tw-space-x-reverse));margin-left:calc(.5rem*(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem*var(--tw-space-x-reverse));margin-left:calc(1rem*(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.scroll-smooth{scroll-behavior:smooth}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-material-md{border-radius:8px}.border{border-width:1px}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0/var(--tw-bg-opacity,1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231/var(--tw-bg-opacity,1))}.bg-primary-500{--tw-bg-opacity:1;background-color:rgb(156 39 176/var(--tw-bg-opacity,1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195/var(--tw-bg-opacity,1))}.bg-opacity-50{--tw-bg-opacity:0.5}.p-3{padding:.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-3{padding-bottom:.75rem}.pt-2{padding-top:.5rem}.text-center{text-align:center}.text-end{text-align:end}.text-2xl{font-size:1.5rem;line-height:2rem}.text-9xl{font-size:8rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.text-error-500{--tw-text-opacity:1;color:rgb(244 67 54/var(--tw-text-opacity,1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99/var(--tw-text-opacity,1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity,1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94/var(--tw-text-opacity,1))}.text-green-800{--tw-text-opacity:1;color:rgb(22 101 52/var(--tw-text-opacity,1))}.text-primary-500{--tw-text-opacity:1;color:rgb(156 39 176/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-yellow-500{--tw-text-opacity:1;color:rgb(234 179 8/var(--tw-text-opacity,1))}.text-yellow-800{--tw-text-opacity:1;color:rgb(133 77 14/var(--tw-text-opacity,1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.shadow-material-1{--tw-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);--tw-shadow-colored:0 1px 3px var(--tw-shadow-color),0 1px 2px var(--tw-shadow-color)}.shadow-material-1,.shadow-material-2{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-material-2{--tw-shadow:0 3px 6px rgba(0,0,0,.15),0 2px 4px rgba(0,0,0,.12);--tw-shadow-colored:0 3px 6px var(--tw-shadow-color),0 2px 4px var(--tw-shadow-color)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-shadow{transition-property:box-shadow;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.animate-bounce-in{animation:bounce-in .5s ease-in-out}@keyframes bounce-in{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1);opacity:.8}to{transform:scale(1);opacity:1}}@keyframes slide-in-right{0%{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.md-alert{display:flex;align-items:flex-start}.md-alert>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.75rem*var(--tw-space-x-reverse));margin-left:calc(.75rem*(1 - var(--tw-space-x-reverse)))}.md-alert{border-radius:.5rem;--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1));padding:1rem;--tw-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);--tw-shadow-colored:0 1px 3px var(--tw-shadow-color),0 1px 2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow);max-width:24rem}.md-alert-success{background-color:rgb(220 252 231/var(--tw-bg-opacity,1));color:rgb(22 101 52/var(--tw-text-opacity,1))}.md-alert-error,.md-alert-success{--tw-bg-opacity:1;--tw-text-opacity:1}.md-alert-error{background-color:rgb(255 205 210/var(--tw-bg-opacity,1));color:rgb(198 40 40/var(--tw-text-opacity,1))}.md-alert-warning{background-color:rgb(255 224 178/var(--tw-bg-opacity,1));color:rgb(239 108 0/var(--tw-text-opacity,1))}.md-alert-info,.md-alert-warning{--tw-bg-opacity:1;--tw-text-opacity:1}.md-alert-info{background-color:rgb(225 190 231/var(--tw-bg-opacity,1));color:rgb(106 27 154/var(--tw-text-opacity,1))}@keyframes fade-out{0%{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-10px)}}.animate-fade-out{animation:fade-out .5s ease-in-out forwards}}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.hover\:bg-primary-50:hover{--tw-bg-opacity:1;background-color:rgb(243 229 245/var(--tw-bg-opacity,1))}.hover\:bg-primary-600:hover{--tw-bg-opacity:1;background-color:rgb(142 36 170/var(--tw-bg-opacity,1))}.hover\:bg-red-50:hover{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.hover\:bg-red-600:hover{--tw-bg-opacity:1;background-color:rgb(220 38 38/var(--tw-bg-opacity,1))}.hover\:text-primary-600:hover{--tw-text-opacity:1;color:rgb(142 36 170/var(--tw-text-opacity,1))}.hover\:text-red-700:hover{--tw-text-opacity:1;color:rgb(185 28 28/var(--tw-text-opacity,1))}.hover\:shadow-material-2:hover{--tw-shadow:0 3px 6px rgba(0,0,0,.15),0 2px 4px rgba(0,0,0,.12);--tw-shadow-colored:0 3px 6px var(--tw-shadow-color),0 2px 4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.focus\:translate-y-0:focus{--tw-translate-y:0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width:768px){.md\:flex{display:flex}.md\:hidden{display:none}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (min-width:1024px){.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.lg\:px-6{padding-left:1.5rem;padding-right:1.5rem}}
+
+================================================================================
+File: src/web/templates/base.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}System Zarządzania Paragonami{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+
+    <link rel="preload" href="{{ url_for('static', filename='js/main.js') }}" as="script">
+
+    <style> /* Add this to style.css or within the <style> tag in head*/
+        .md-alert {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .md-alert.animate-fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-roboto antialiased flex flex-col min-h-screen">
+    <a href="#main-content" class="fixed top-2 left-2 z-50 bg-primary-500 text-white px-4 py-2 rounded-lg transform -translate-y-full focus:translate-y-0 transition-transform duration-300">
+        Przejdź do głównej treści
+    </a>
+
+    <header class="bg-white shadow-material-1">
+        <div class="max-w-screen-xl mx-auto py-4 px-4 lg:px-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary-500">Moje Paragony</h1>
+
+            <nav class="flex items-center justify-between w-full flex-wrap">  <!-- Combined Navigation -->
+                <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-expanded="false" class="md:hidden md-button-icon text-primary-500 hover:bg-primary-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <ul id="main-nav" class="hidden w-full md:flex md:w-auto md:items-center md:ml-auto space-x-4 md:space-x-6">
+                    <li><a href="{{ url_for('receipts.index') }}" class="md-nav-link {% if request.endpoint == 'receipts.index' %}text-primary-500 font-semibold{% endif %} hover:text-primary-600 transition-colors">Strona Główna</a></li>
+                    <li><a href="{{ url_for('receipts.receipt_list') }}" class="md-nav-link {% if request.endpoint == 'receipts.receipt_list' %}text-primary-500 font-semibold{% endif %} hover:text-primary-600 transition-colors">Lista Paragonów</a></li>
+                    <li><a href="{{ url_for('receipts.upload') }}" class="md-button bg-primary-500 text-white hover:bg-primary-600 transition-colors">Dodaj Paragon</a></li>
+                </ul>
+            </nav>
+
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-grow md-container mt-8 mb-10 px-4 w-full max-w-screen-xl mx-auto">
+        <div id="notification-container" class="fixed top-20 right-6 z-50 space-y-2">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="md-alert md-alert-{{ category }} animate-bounce-in shadow-material-2">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}  <!--- add base content block here --->
+
+    </main>
+
+    <footer class="bg-gray-100 py-6 mt-auto">
+        <div class="md-container text-center max-w-screen-xl mx-auto px-4">
+            <p class="text-gray-600">&copy; {{ current_year }} System Zarządzania Paragonami</p>
+            <div class="mt-2 text-sm text-gray-500">Projekt zarządzania paragonami i inwentaryzacji</div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>  <!-- Single script include -->
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('main-nav');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const isExpanded = !mobileMenu.classList.contains('hidden');
+            mobileMenuToggle.setAttribute('aria-expanded', isExpanded);
+        });
+
+
+         //Make sure to include main.js after body has finished loading with defer
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            function removeNotifications() {
+                const notifications = document.querySelectorAll('#notification-container .md-alert');
+                notifications.forEach(notification => {
+                    notification.classList.add('animate-fade-out');
+                    notification.addEventListener('transitionend', () => { notification.remove();});
+                });
+            }
+            setTimeout(removeNotifications, 5000);
+
+        });
+    </script>
+</body>
+</html>
+
+
+
+================================================================================
+File: src/web/templates/verify.html
+================================================================================
+{% extends "base.html" %}
+
+{% block title %}Weryfikacja Paragonu{% endblock %}
+
+{% block content %}
+<div class="md-container px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Nagłówek -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-primary-500 hover:text-primary-600 transition-colors">Weryfikacja Paragonu</h1>
+            <p class="mt-2 text-gray-600">Sprawdź i edytuj dane z paragonu</p>
+        </div>
+
+        <!-- Formularz -->
+        <form id="verifyForm" method="POST" class="space-y-6">
+            {{ form.csrf_token }}
+            {{ form.receipt_id }}
+
+            <!-- Podstawowe informacje -->
+            <div class="md-card bg-white rounded-lg shadow-material-1 p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Informacje podstawowe</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nazwa sklepu -->
+                    <div>
+                        {{ form.store_name.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                        {{ form.store_name(class="md-input w-full") }}
+                        {% if form.store_name.errors %}
+                            {% for error in form.store_name.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Data zakupu -->
+                    <div>
+                        {{ form.purchase_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                        {{ form.purchase_date(class="md-input w-full", type="date") }}
+                        {% if form.purchase_date.errors %}
+                            {% for error in form.purchase_date.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista produktów -->
+            <div class="md-card bg-white rounded-lg shadow-material-1 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-medium text-gray-900">Produkty</h2>
+                    <button type="button" 
+                            onclick="window.receiptForm.addProduct()"
+                            class="md-button-outlined text-primary-500 hover:bg-primary-50">
+                        Dodaj produkt
+                    </button>
+                </div>
+
+                <div id="products-container" class="space-y-4">
+                    {% for product in form.products %}
+                    <div class="product-item border rounded-lg p-4 bg-gray-50">
+                        <div class="flex justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-700">Produkt #{{ loop.index }}</h3>
+                            <button type="button"
+                                    onclick="window.receiptForm.removeProduct(this)"
+                                    class="text-red-500 hover:text-red-700">
+                                <span class="sr-only">Usuń produkt</span>
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {{ product.id }}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Nazwa produktu -->
+                            <div>
+                                {{ product.form.name.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.name(class="md-input w-full product-name", autocomplete="off") }}
+                            </div>
+
+                            <!-- Cena jednostkowa -->
+                            <div>
+                                {{ product.form.unit_price.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.unit_price(class="md-input w-full price-input", type="number", step="0.01") }}
+                            </div>
+
+                            <!-- Ilość -->
+                            <div>
+                                {{ product.form.quantity.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.quantity(class="md-input w-full quantity-input", type="number", step="0.001") }}
+                            </div>
+
+                            <!-- Jednostka -->
+                            <div>
+                                {{ product.form.unit.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.unit(class="md-input w-full") }}
+                            </div>
+
+                            <!-- Kategoria -->
+                            <div>
+                                {{ product.form.category_id.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.category_id(class="md-select w-full") }}
+                            </div>
+
+                            <!-- Data ważności -->
+                            <div>
+                                {{ product.form.expiry_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                                {{ product.form.expiry_date(class="md-input w-full", type="date") }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Podsumowanie -->
+            <div class="md-card bg-white rounded-lg shadow-material-1 p-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900">Podsumowanie</h2>
+                    <div>
+                        {{ form.total_amount.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                        {{ form.total_amount(class="md-input", type="number", step="0.01") }}
+                        {% if form.total_amount.errors %}
+                            {% for error in form.total_amount.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="flex justify-end space-x-2">
+                <a href="{{ url_for('receipts.receipt_list') }}" 
+                   class="md-button-outlined text-gray-700 hover:bg-gray-50">
+                    Anuluj
+                </a>
+                <button type="submit" class="md-button bg-primary-500 text-white hover:bg-primary-600">
+                    Zapisz zmiany
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Szablon produktu -->
+<template id="product-template">
+    <div class="product-item border rounded-lg p-4 bg-gray-50">
+        <div class="flex justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-700">Nowy produkt</h3>
+            <button type="button"
+                    onclick="window.receiptForm.removeProduct(this)"
+                    class="text-red-500 hover:text-red-700">
+                <span class="sr-only">Usuń produkt</span>
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Szablon pól produktu -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nazwa produktu</label>
+                <input type="text" name="products-{index}-name" class="md-input w-full product-name" autocomplete="off" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cena jednostkowa</label>
+                <input type="number" name="products-{index}-unit_price" class="md-input w-full price-input" step="0.01" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ilość</label>
+                <input type="number" name="products-{index}-quantity" class="md-input w-full quantity-input" step="0.001" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jednostka</label>
+                <input type="text" name="products-{index}-unit" class="md-input w-full">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kategoria</label>
+                <select name="products-{index}-category_id" class="md-select w-full">
+                    <option value="0">-- Wybierz kategorię --</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Data ważności</label>
+                <input type="date" name="products-{index}-expiry_date" class="md-input w-full">
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/ReceiptVerificationForm.js') }}"></script>
+{% endblock %}
+
+================================================================================
+File: src/web/templates/receipt_list.html
+================================================================================
+{% extends "base.html" %}
+
+{% block title %}Lista Paragonów{% endblock %}
+
+{% block content %}
+<div class="md-container px-4 py-8">
+    <!-- Nagłówek z przyciskiem dodawania -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Lista Paragonów</h1>
+        <a href="{{ url_for('receipts.upload') }}" 
+           class="md-button bg-primary-500 text-white hover:bg-primary-600 transition-colors">
+            Dodaj Paragon
+        </a>
+    </div>
+
+    <!-- Karty paragonów -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for receipt in receipts %}
+        <div class="md-card bg-white rounded-lg shadow-material-1 hover:shadow-material-2 transition-shadow">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">{{ receipt.store_name }}</h3>
+                        <p class="text-sm text-gray-500">{{ receipt.purchase_date.strftime('%d.%m.%Y') }}</p>
+                    </div>
+                    <span class="px-2 py-1 text-sm rounded-full 
+                        {% if receipt.status == 'verified' %}
+                            bg-green-100 text-green-800
+                        {% elif receipt.status == 'processing' %}
+                            bg-yellow-100 text-yellow-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}">
+                        {{ receipt.status }}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-gray-600">Suma: {{ "%.2f"|format(receipt.total_amount) }} zł</p>
+                    <p class="text-sm text-gray-500">Liczba produktów: {{ receipt.products.count() }}</p>
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <a href="{{ url_for('receipts.verify_receipt', receipt_id=receipt.id) }}"
+                       class="md-button-outlined text-primary-500 hover:bg-primary-50">
+                        Weryfikuj
+                    </a>
+                    <button onclick="deleteReceipt({{ receipt.id }})"
+                            class="md-button-outlined text-red-500 hover:bg-red-50">
+                        Usuń
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">Brak paragonów do wyświetlenia</p>
+            <a href="{{ url_for('receipts.upload') }}" 
+               class="md-button bg-primary-500 text-white hover:bg-primary-600 mt-4">
+                Dodaj pierwszy paragon
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal potwierdzenia usunięcia -->
+<div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="md-card bg-white rounded-lg shadow-material-2 max-w-md w-full">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Potwierdź usunięcie</h3>
+                <p class="text-gray-600 mb-6">Czy na pewno chcesz usunąć ten paragon? Tej operacji nie można cofnąć.</p>
+                <div class="flex justify-end space-x-2">
+                    <button onclick="closeDeleteModal()"
+                            class="md-button-outlined text-gray-500 hover:bg-gray-50">
+                        Anuluj
+                    </button>
+                    <button id="confirmDelete"
+                            class="md-button bg-red-500 text-white hover:bg-red-600">
+                        Usuń
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let receiptToDelete = null;
+
+function deleteReceipt(id) {
+    receiptToDelete = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    receiptToDelete = null;
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+document.getElementById('confirmDelete').addEventListener('click', async function() {
+    if (!receiptToDelete) return;
+    
+    try {
+        const response = await fetch(`/receipts/${receiptToDelete}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+    if (response.ok) {
+        showNotification('success', data.message);
+        setTimeout(() => window.location.reload(), 1000);
+    } else {
+        showNotification('error', data.message || 'Wystąpił błąd podczas usuwania paragonu');
+        }
+    } catch (error) {
+        showNotification('error', 'Wystąpił błąd podczas usuwania paragonu');
+    } finally {
+        closeDeleteModal();
+    }
+});
+
+function showNotification(type, message) {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `md-alert md-alert-${type} animate-bounce-in`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('animate-fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 5000);
+}
+</script>
+{% endblock %}
+
+================================================================================
+File: src/web/templates/upload.html
+================================================================================
+{% extends "base.html" %}
+
+{% block title %}Dodaj Nowy Paragon{% endblock %}
+
+{% block content %}
+<div class="md-container px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Nagłówek -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Dodaj Nowy Paragon</h1>
+            <p class="mt-2 text-gray-600">Wypełnij formularz i dodaj zdjęcie paragonu</p>
+        </div>
+
+        <!-- Formularz -->
+        <form method="POST" enctype="multipart/form-data" class="md-card bg-white rounded-lg shadow-material-1 p-6">
+            {{ form.csrf_token }}
+            
+            <!-- Nazwa sklepu -->
+            <div class="mb-6">
+                {{ form.store_name.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.store_name(class="md-input w-full") }}
+                {% if form.store_name.errors %}
+                    {% for error in form.store_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Data zakupu -->
+            <div class="mb-6">
+                {{ form.purchase_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.purchase_date(class="md-input w-full", type="date") }}
+                {% if form.purchase_date.errors %}
+                    {% for error in form.purchase_date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Upload zdjęcia -->
+            <div class="mb-6">
+                <div class="space-y-2">
+                    {{ form.receipt_image.label(class="block text-sm font-medium text-gray-700") }}
+                    <div class="flex items-center space-x-2">
+                        <label class="md-button-outlined cursor-pointer">
+                            <span>Wybierz plik</span>
+                            {{ form.receipt_image(class="hidden", onchange="showPreview(event)") }}
+                        </label>
+                        <span id="file-name" class="text-sm text-gray-500">Nie wybrano pliku</span>
+                    </div>
+                    {% if form.receipt_image.errors %}
+                        {% for error in form.receipt_image.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <!-- Podgląd zdjęcia -->
+                <div id="image-preview" class="hidden mt-4">
+                    <img id="preview" class="max-w-full h-auto rounded-lg shadow-sm" src="" alt="Podgląd paragonu">
+                </div>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="flex justify-end space-x-2">
+                <a href="{{ url_for('receipts.receipt_list') }}" 
+                   class="md-button-outlined text-gray-700 hover:bg-gray-50">
+                    Anuluj
+                </a>
+                <button type="submit" class="md-button bg-primary-500 text-white hover:bg-primary-600">
+                    Dodaj paragon
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showPreview(event) {
+    const input = event.target;
+    const preview = document.getElementById('preview');
+    const previewContainer = document.getElementById('image-preview');
+    const fileName = document.getElementById('file-name');
+    
+    fileName.textContent = input.files[0]?.name || 'Nie wybrano pliku';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        previewContainer.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}
+
+================================================================================
+File: src/web/templates/errors/404.html
+================================================================================
+{% extends "base.html" %}
+
+{% block title %}404 - Nie znaleziono strony{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="md-card max-w-md w-full text-center space-y-6">
+        <div class="space-y-4">
+            <h1 class="text-9xl font-bold text-primary-500">404</h1>
+            <h2 class="text-2xl font-medium text-gray-900">Strona nie została znaleziona</h2>
+            <p class="text-gray-600">Przepraszamy, ale strona której szukasz nie istnieje lub została przeniesiona.</p>
+        </div>
+
+        <div>
+            <a href="{{ url_for('receipts.index') }}" 
+               class="md-button inline-flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                <span>Wróć do strony głównej</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+================================================================================
+File: src/web/templates/errors/500.html
+================================================================================
+{% extends "base.html" %}
+
+{% block title %}500 - Błąd serwera{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="md-card max-w-md w-full text-center space-y-6">
+        <div class="space-y-4">
+            <h1 class="text-9xl font-bold text-error-500">500</h1>
+            <h2 class="text-2xl font-medium text-gray-900">Błąd serwera</h2>
+            <p class="text-gray-600">Przepraszamy, wystąpił nieoczekiwany błąd. Nasi programiści zostali powiadomieni o problemie.</p>
+        </div>
+
+        <div class="space-y-4">
+            <a href="{{ url_for('receipts.index') }}" 
+               class="md-button inline-flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                <span>Wróć do strony głównej</span>
+            </a>
+            
+            <button onclick="window.location.reload()" 
+                    class="md-button-outlined inline-flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                <span>Spróbuj ponownie</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+================================================================================
+File: tests/conftest.py
+================================================================================
+import pytest
+from src.web import create_app
+from src.database import db as _db
+from datetime import datetime
+from src.config import Config
+
+
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+
+
+@pytest.fixture(scope='session')
+def app():
+    """Create and configure a new app instance for each test session."""
+    app = create_app(TestConfig)
+    
+    # Utworzenie kontekstu aplikacji
+    ctx = app.app_context()
+    ctx.push()
+
+    yield app
+
+    ctx.pop()
+
+
+@pytest.fixture(scope='function')
+def db(app):
+    """Create a new database for each test."""
+    with app.app_context():
+        _db.create_all()
+        yield _db
+        _db.session.close()
+        _db.drop_all()
+
+
+@pytest.fixture(scope='function')
+def client(app):
+    return app.test_client()
+
+================================================================================
+File: tests/test_api.py
+================================================================================
+import pytest
+from src.web.app import app
+from src.database.manager import DatabaseManager
+from pathlib import Path
+import json
+import os
+from io import BytesIO
+
+
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    app.config['UPLOAD_FOLDER'] = Path('test_uploads')
+    with app.test_client() as client:
+        yield client
+    # Cleanup
+    if os.path.exists('test_uploads'):
+        for file in Path('test_uploads').glob('*'):
+            file.unlink()
+        Path('test_uploads').rmdir()
+
+
+@pytest.fixture
+def sample_receipt_data():
+    return {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'products': [
+            {
+                'name': 'Test Product 1',
+                'quantity': 2,
+                'price': 25.25,
+                'unit': 'szt'
+            },
+            {
+                'name': 'Test Product 2',
+                'quantity': 1,
+                'price': 50.00,
+                'unit': 'szt'
+            }
+        ],
+        'total': 100.50
+    }
+
+
+def test_index(client):
+    """Test strony głównej"""
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b'Smart Zapasy' in response.data
+
+
+def test_upload_no_file(client):
+    """Test uploadu bez pliku"""
+    response = client.post('/upload')
+    assert response.status_code == 302  # Redirect
+
+
+def test_upload_invalid_file(client):
+    """Test uploadu nieprawidłowego pliku"""
+    data = {
+        'receipt': (BytesIO(b'invalid file content'), 'test.txt')
+    }
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
+    assert response.status_code == 302  # Redirect
+
+
+def test_upload_valid_file(client):
+    """Test uploadu prawidłowego pliku"""
+    # Tworzenie przykładowego obrazu PNG
+    from PIL import Image
+    import io
+
+    img = Image.new('RGB', (100, 100), color='white')
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+
+    data = {
+        'receipt': (BytesIO(img_byte_arr), 'test.png')
+    }
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
+    assert response.status_code == 200
+    assert b'Weryfikacja' in response.data
+
+
+def test_save_receipt(client, sample_receipt_data):
+    """Test zapisywania paragonu"""
+    response = client.post('/save',
+                           data=json.dumps(sample_receipt_data),
+                           content_type='application/json')
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['success'] is True
+
+
+def test_save_receipt_invalid_data(client):
+    """Test zapisywania paragonu z nieprawidłowymi danymi"""
+    invalid_data = {
+        'store': 'Test Store',
+        # brak wymaganych pól
+    }
+    response = client.post('/save',
+                           data=json.dumps(invalid_data),
+                           content_type='application/json')
+    assert response.status_code == 400
+    data = json.loads(response.data)
+    assert data['success'] is False
+
+
+def test_list_receipts(client):
+    """Test listy paragonów"""
+    response = client.get('/receipts')
+    assert response.status_code == 200
+    assert b'Lista paragon' in response.data
+
+
+def test_view_receipt(client, sample_receipt_data):
+    """Test widoku szczegółów paragonu"""
+    # Najpierw zapisz paragon
+    response = client.post('/save',
+                           data=json.dumps(sample_receipt_data),
+                           content_type='application/json')
+    data = json.loads(response.data)
+    receipt_id = data['receipt_id']
+
+    # Następnie sprawdź widok szczegółów
+    response = client.get(f'/receipt/{receipt_id}')
+    assert response.status_code == 200
+    assert b'Test Store' in response.data
+
+
+def test_view_nonexistent_receipt(client):
+    """Test widoku nieistniejącego paragonu"""
+    response = client.get('/receipt/999')
+    assert response.status_code == 302  # Redirect
+# API tests
+
+================================================================================
+File: tests/test_database.py
+================================================================================
+import pytest
+from src.database.manager import DatabaseManager
+from src.database.models import Receipt, ReceiptItem
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import os
+from datetime import datetime
+
+
+@pytest.fixture
+def test_db():
+    """Tworzy tymczasową bazę danych dla testów"""
+    test_db_path = "sqlite:///test_receipts.db"
+    engine = create_engine(test_db_path)
+
+    # Tworzenie tabel
+    from src.database.models import Base
+    Base.metadata.create_all(engine)
+
+    yield test_db_path
+
+    # Czyszczenie po testach
+    os.remove("test_receipts.db")
+
+
+@pytest.fixture
+def db_manager(test_db):
+    """Tworzy instancję DatabaseManager z testową bazą"""
+    os.environ['DATABASE_URL'] = test_db
+    manager = DatabaseManager()
+    yield manager
+    manager.session.close()
+
+
+def test_save_receipt(db_manager):
+    """Test zapisywania paragonu"""
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Test Product 1',
+                'quantity': 2,
+                'price': 25.25,
+                'unit': 'szt'
+            },
+            {
+                'name': 'Test Product 2',
+                'quantity': 1,
+                'price': 50.00,
+                'unit': 'szt'
+            }
+        ]
+    }
+
+    # Zapisanie paragonu
+    receipt = db_manager.save_receipt(receipt_data)
+
+    # Sprawdzenie czy paragon został zapisany
+    assert receipt.id is not None
+    assert receipt.store == 'Test Store'
+    assert receipt.total == 100.50
+    assert len(receipt.items) == 2
+
+
+def test_get_receipts(db_manager):
+    """Test pobierania listy paragonów"""
+    # Dodanie testowych paragonów
+    for i in range(3):
+        receipt_data = {
+            'store': f'Test Store {i}',
+            'date': '2024-01-20',
+            'total': 100.00 + i,
+            'items': [
+                {
+                    'name': f'Test Product {i}',
+                    'quantity': 1,
+                    'price': 100.00 + i,
+                    'unit': 'szt'
+                }
+            ]
+        }
+        db_manager.save_receipt(receipt_data)
+
+    # Pobranie paragonów
+    receipts = db_manager.get_receipts()
+
+    # Sprawdzenie wyników
+    assert len(receipts) == 3
+    assert all(isinstance(r, Receipt) for r in receipts)
+    assert receipts[0].total > receipts[1].total  # Sprawdzenie sortowania
+
+
+def test_get_receipt(db_manager):
+    """Test pobierania pojedynczego paragonu"""
+    # Dodanie testowego paragonu
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Test Product',
+                'quantity': 1,
+                'price': 100.50,
+                'unit': 'szt'
+            }
+        ]
+    }
+    saved_receipt = db_manager.save_receipt(receipt_data)
+
+    # Pobranie paragonu
+    receipt = db_manager.get_receipt(saved_receipt.id)
+
+    # Sprawdzenie wyników
+    assert receipt is not None
+    assert receipt.id == saved_receipt.id
+    assert receipt.store == 'Test Store'
+    assert receipt.total == 100.50
+    assert len(receipt.items) == 1
+
+
+def test_receipt_not_found(db_manager):
+    """Test pobierania nieistniejącego paragonu"""
+    receipt = db_manager.get_receipt(999)
+    assert receipt is None
+
+
+def test_inventory_management(db_manager):
+    """Test zarządzania stanem magazynowym"""
+    # Najpierw dodajmy testowy paragon
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Produkt testowy 1',
+                'quantity': 5,
+                'price': 20.00,
+                'unit': 'szt',
+                'current_quantity': 5,
+                'expiry_date': '2024-06-20',
+                'notes': 'Notatka testowa'
+            },
+            {
+                'name': 'Produkt testowy 2',
+                'quantity': 2,
+                'price': 10.25,
+                'unit': 'kg',
+                'current_quantity': 2,
+                'expiry_date': None,
+                'notes': None
+            }
+        ]
+    }
+
+    # Zapisz paragon
+    receipt = db_manager.save_receipt(receipt_data)
+    assert receipt is not None
+
+    # Pobierz stan magazynowy
+    inventory = db_manager.get_inventory_items()
+    assert len(inventory) == 2
+
+    # Sprawdź czy stany są poprawne
+    first_item = inventory[0]
+    assert first_item.name == 'Produkt testowy 1'
+    assert first_item.current_quantity == 5
+
+    # Zaktualizuj ilość pierwszego produktu
+    success = db_manager.update_item_quantity(first_item.id, 3, "Zużyto 2 sztuki")
+    assert success is True
+
+    # Sprawdź czy aktualizacja się powiodła
+    updated_inventory = db_manager.get_inventory_items()
+    updated_item = next(item for item in updated_inventory if item.id == first_item.id)
+    assert updated_item.current_quantity == 3
+    assert "Zużyto 2 sztuki" in updated_item.notes
+# Database tests
+
+================================================================================
+File: tests/test_ocr.py
+================================================================================
+import pytest
+from src.services.ocr import OCRService
+from pathlib import Path
+from unittest.mock import Mock, patch
+import os
+
+
+@pytest.fixture
+def mock_vision_client():
+    with patch('src.services.ocr.vision.ImageAnnotatorClient') as mock:
+        yield mock
+
+
+@pytest.fixture
+def ocr_service(mock_vision_client):
+    return OCRService("dummy_path")
+
+
+def test_extract_store():
+    """Test wyciągania nazwy sklepu z tekstu"""
+    ocr = OCRService("dummy_path")
+    sample_text = """BIEDRONKA
+    ul. Przykładowa 123
+    01-234 Warszawa
+    2024-01-20"""
+
+    assert ocr._extract_store(sample_text) == "BIEDRONKA"
+
+
+def test_extract_date():
+    """Test wyciągania daty z tekstu"""
+    ocr = OCRService("dummy_path")
+    sample_text = """BIEDRONKA
+    Data: 2024-01-20"""
+
+    result = ocr._extract_date(sample_text)
+    assert result is not None
+    assert result.year == 2024
+    assert result.month == 1
+    assert result.day == 20
+
+
+def test_parse_product_line():
+    """Test parsowania linii z produktem"""
+    ocr = OCRService("dummy_path")
+    sample_lines = [
+        "Chleb 3.99",
+        "Masło 200g 7.99",
+        "Mleko 1l 4.50",
+        "Jabłka 1.5kg 7.49"
+    ]
+
+    expected_results = [
+        {'name': 'Chleb', 'quantity': 1, 'unit': 'szt', 'price': 3.99},
+        {'name': 'Masło', 'quantity': 200, 'unit': 'g', 'price': 7.99},
+        {'name': 'Mleko', 'quantity': 1, 'unit': 'l', 'price': 4.50},
+        {'name': 'Jabłka', 'quantity': 1.5, 'unit': 'kg', 'price': 7.49}
+    ]
+
+    for line, expected in zip(sample_lines, expected_results):
+        result = ocr._parse_product_line(line)
+        assert result is not None
+        assert result['name'] == expected['name']
+        assert result['price'] == expected['price']
+
+
+@pytest.mark.integration
+def test_process_image(ocr_service, mock_vision_client):
+    """Test przetwarzania całego paragonu"""
+    # Przygotowanie mocka odpowiedzi z Google Vision
+    mock_response = Mock()
+    mock_response.text_annotations = [Mock(description="""
+    BIEDRONKA
+    ul. Przykładowa 123
+    2024-01-20
+
+    Chleb 3.99
+    Masło 200g 7.99
+    Mleko 1l 4.50
+
+    SUMA PLN 16.48
+    """)]
+    mock_response.error = Mock(message=None)
+
+    mock_vision_client.return_value.text_detection.return_value = mock_response
+
+    # Wykonanie testu
+    result = ocr_service.process_image("dummy_path")
+
+    # Sprawdzenie rezultatów
+    assert result is not None
+    assert result['store'] == "BIEDRONKA"
+    assert result['date'] == "2024-01-20"
+    assert len(result['products']) == 3
+    assert result['total'] == 16.48
+# OCR tests
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\pytest.ini
+================================================================================
+
+[pytest]
+testpaths = tests
+markers =
+    smoke: mark test as smoke
+    regression: mark test as regression
+log_cli_level = INFO
+log_file_level = DEBUG
+log_file = pytest.log
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\README.md
+================================================================================
+
+# Systemu Syste
+m Zarządzania Paragonami - Dokumentacja Projektu
+
+## Stan Projektu na dzień 28.12.2024
+
+### Zrealizowane Komponenty
+
+#### 1. Struktura Bazy Danych
+- Modele: Receipt, Product, Category w `src.database.models`
+- Wykorzystanie SQLAlchemy z podstawowymi relacjami
+- System migracji z Flask-Migrate
+- Automatyczna inicjalizacja bazy przez skrypt
+
+#### 2. Interfejs Webowy
+- Formularze Flask-WTF do weryfikacji danych
+- Interfejs listy paragonów z funkcjami weryfikacji i usuwania
+- Formularz uploadu nowych paragonów
+- Obsługa błędów 404, 500 i 403
+- Responsywny interfejs z Bootstrap 5
+- Rozpoczęta implementacja Material Design
+- Konfiguracja Tailwind CSS (w trakcie)
+
+#### 3. Frontend
+- Base template z Bootstrap i Font Awesome
+- Szablony dla wszystkich widoków
+- Style CSS dla formularzy
+- Konfiguracja Tailwind CSS
+- Niestandardowe komponenty Material Design
+
+### Struktura Projektu
+
+```
+src/
+├── database/
+│   └── models.py              # Modele bazodanowe
+├── web/
+│   ├── forms.py              # Formularze Flask-WTF
+│   ├── views.py              # Widoki Flask
+│   ├── error_handlers.py     # Obsługa błędów
+│   ├── static/
+│   │   ├── css/style.css     # Style CSS
+│   │   └── js/ReceiptVerificationForm.js
+│   └── templates/
+│       ├── base.html         # Szablon bazowy
+│       ├── index.html        # Strona główna
+│       ├── receipt_list.html # Lista paragonów
+│       ├── upload.html       # Upload paragonów
+│       ├── verify.html       # Formularz weryfikacji
+│       └── errors/
+│           ├── 404.html      # Błąd 404
+│           └── 500.html      # Błąd 500
+```
+
+### Wymagane Zależności
+```
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-WTF==1.2.1
+google-cloud-vision==3.5.0
+Pillow==10.1.0
+python-dotenv==1.0.0
+Werkzeug==3.0.1
+pytest==8.0.0
+```
+
+## Elementy Do Implementacji
+
+### Priorytet 1: Uporządkowanie Projektu
+1. Usunięcie zduplikowanych plików i szablonów
+2. Reorganizacja struktury views.py
+3. Uzupełnienie brakujących testów
+4. Dokończenie implementacji stylów CSS
+
+### Priorytet 2: Podstawowe Funkcjonalności
+1. Implementacja pełnego systemu uploadu plików
+2. Dokończenie endpointów REST API
+3. Implementacja pełnej obsługi błędów
+4. System walidacji danych
+
+### Priorytet 3: Automatyzacja
+1. Integracja z Google Cloud Vision API
+2. System OCR dla paragonów
+3. Automatyczne przetwarzanie danych
+4. System powiadomień
+
+### Priorytet 4: System Użytkowników
+1. Model User i integracja z Flask-Login
+2. Formularze logowania i rejestracji
+3. System uprawnień
+4. Panel administracyjny
+
+## Uwagi Techniczne
+
+### Konfiguracja Środowiska
+- Wymagany Python 3.12
+- Projekt skonfigurowany jako pakiet Python (setup.py)
+- Konfiguracja w `src/config.py`
+- Środowisko deweloperskie z debuggerem
+
+### Struktura Bazy Danych
+- SQLite jako baza danych
+- Ścieżka do bazy: `data/zakupy.db`
+- Automatyczne migracje przez Flask-Migrate
+
+### Frontend
+- Bootstrap 5 jako podstawowy framework
+- Material Design dla komponentów
+- Tailwind CSS do stylizacji
+- Font Awesome dla ikon
+- JavaScript do dynamicznej obsługi formularzy
+
+## Znane Problemy
+
+1. Niekompletna implementacja uploadu plików
+2. Brak pełnej obsługi błędów w niektórych endpointach
+3. Niewystarczające pokrycie testami
+4. Konieczność dokończenia integracji Tailwind CSS
+
+## Następne Kroki
+
+1. Uporządkowanie kodu i usunięcie duplikatów
+2. Dokończenie implementacji podstawowych funkcjonalności
+3. Dodanie testów jednostkowych
+4. Integracja z OCR
+5. Implementacja systemu użytkowników
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\requirements.txt
+================================================================================
+
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-WTF==1.2.1
+google-cloud-vision==3.5.0
+Pillow==10.1.0
+python-dotenv==1.0.0
+Werkzeug==3.0.1
+pytest==8.0.0
+tailwindcss==3.4.1
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\setup.py
+================================================================================
+
+from setuptools import setup, find_packages
+
+setup(
+    name="receipts-manager",
+    version="0.1",
+    packages=find_packages(),
+    install_requires=[
+        'flask',
+        'flask-sqlalchemy',
+        'flask-migrate',
+        'flask-wtf',
+        'python-dotenv',
+        'Pillow',
+        'google-cloud-vision'
+    ],
+)
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tailwind.config.js
+================================================================================
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/web/templates/**/*.html",
+    "./src/web/static/js/**/*.js",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Rozszerzone kolory primary
+        'primary': {
+          50: '#F3E5F5',
+          100: '#E1BEE7',
+          200: '#CE93D8',
+          300: '#BA68C8',
+          400: '#AB47BC',
+          500: '#9C27B0', // Bazowy kolor primary
+          600: '#8E24AA',
+          700: '#7B1FA2',
+          800: '#6A1B9A',
+          900: '#4A148C',
+          // Nowe odcienie
+          'light': '#B868C8',
+          'dark': '#6A1B9A',
+          'accent': '#F3E5F5',
+        },
+        
+        // Rozszerzone kolory secondary
+        'secondary': {
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50', // Bazowy kolor secondary
+          600: '#43A047',
+          700: '#388E3C',
+          800: '#2E7D32',
+          900: '#1B5E20',
+          // Nowe odcienie
+          'light': '#81C784',
+          'dark': '#2E7D32',
+          'accent': '#E8F5E9',
+        },
+        
+        // Rozszerzone kolory błędów, ostrzeżeń itp.
+        'error': {
+          50: '#FFEBEE',
+          100: '#FFCDD2',
+          200: '#EF9A9A',
+          300: '#E57373',
+          400: '#EF5350',
+          500: '#F44336', // Bazowy kolor błędu
+          600: '#E53935',
+          700: '#D32F2F',
+          800: '#C62828',
+          900: '#B71C1C',
+        },
+        
+        'warning': {
+          50: '#FFF3E0',
+          100: '#FFE0B2',
+          200: '#FFCD85',
+          300: '#FFB74D',
+          400: '#FFA726',
+          500: '#FF9800', // Bazowy kolor ostrzeżenia
+          600: '#FB8C00',
+          700: '#F57C00',
+          800: '#EF6C00',
+          900: '#E65100',
+        },
+        
+        'success': {
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50', // Bazowy kolor sukcesu
+          600: '#43A047',
+          700: '#388E3C',
+          800: '#2E7D32',
+          900: '#1B5E20',
+        },
+        
+        // Neutralne kolory
+        'neutral': {
+          50: '#FAFAFA',
+          100: '#F5F5F5',
+          200: '#EEEEEE',
+          300: '#E0E0E0',
+          400: '#BDBDBD',
+          500: '#9E9E9E',
+          600: '#757575',
+          700: '#616161',
+          800: '#424242',
+          900: '#212121',
+        },
+        
+        'background': '#FFFFFF',
+        'surface': '#FFFFFF',
+      },
+      
+      // Pozostałe rozszerzenia jak poprzednio...
+      borderRadius: {
+        'material-sm': '4px',
+        'material-md': '8px',
+        'material-lg': '16px',
+      },
+      boxShadow: {
+        'material-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+        'material-2': '0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)',
+        'material-3': '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
+        'material-4': '0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)',
+        'material-5': '0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22)',
+      },
+      spacing: {
+        'material-1': '4px',
+        'material-2': '8px',
+        'material-3': '16px',
+        'material-4': '24px',
+        'material-5': '32px',
+        'material-6': '40px',
+      },
+    },
+  },
+  plugins: [],
+}
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\test_hello_world.py
+================================================================================
+
+def test_hello_world():
+    assert 1 + 1 == 2

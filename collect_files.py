@@ -1,85 +1,65 @@
 import os
-import shutil
 from pathlib import Path
 from datetime import datetime
 
+def scan_project_structure(root_dir):
+    """Zwraca słownik, w którym kluczami są katalogi, a wartościami listy plików."""
+    project_structure = {}
+    for root, _, files in os.walk(root_dir):
+        root_path = Path(root)
+        if files:
+            project_structure[root_path] = [root_path / file for file in files]
+    return project_structure
 
-def collect_project_files(output_file='project_files.txt'):
-    """Collect and save content of key project files."""
-    key_files = [
-        # Konfiguracja
-        'src/config.py',
-        '.env',
-        'requirements.txt',
-        'setup.py',
-        'package.json',
-        'tailwind.config.js',
-        'postcss.config.js',
-        
-        # Backend
-        'src/web/__init__.py',
-        'src/database/__init__.py',
-        'src/database/models.py',
-        'src/web/views.py',
-        'src/web/forms.py',
-        'src/web/error_handlers.py',
-        
-        # Frontend
-        'src/web/static/js/ReceiptVerificationForm.js',
-        'src/web/static/js/ReceiptVerificationForm.jsx',
-        'src/web/static/css/style.css',
-        'src/web/static/css/main.css',
-        
-        # Szablony
-        'src/web/templates/base.html',
-        'src/web/templates/verify.html',
-        'src/web/templates/receipt_list.html',
-        'src/web/templates/upload.html',
-        'src/web/templates/errors/404.html',
-        'src/web/templates/errors/500.html',
-        
-        # Testy
-        'tests/conftest.py',
-        'tests/test_api.py',
-        'tests/test_database.py',
-        'tests/test_ocr.py'
-    ]
+def save_files_by_directory(project_structure, output_dir):
+    """Zapisuje zawartość plików do osobnych plików dla każdego katalogu."""
+    for directory, files in project_structure.items():
+        relative_dir = directory.relative_to(root_dir)
+        output_file_path = output_dir / f"{relative_dir.as_posix().replace('/', '_')}_files.txt"
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    output_file = f'project_files_{timestamp}.txt'
+        with output_file_path.open('w', encoding='utf-8') as f:
+            f.write(f"=== Directory: {directory} ===\n\n")
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(f"=== Project Files Collection ({timestamp}) ===\n\n")
+            for file_path in files:
+                f.write(f"\n{'=' * 80}\n")
+                f.write(f"File: {file_path}\n")
+                f.write(f"{'=' * 80}\n\n")
 
-        for file_path in key_files:
-            f.write(f"\n{'=' * 80}\n")
-            f.write(f"File: {file_path}\n")
-            f.write(f"{'=' * 80}\n")
+                try:
+                    with file_path.open('r', encoding='utf-8') as source_file:
+                        f.write(source_file.read())
+                except Exception as e:
+                    f.write(f"[ERROR] Could not read file: {file_path}\n")
+                    f.write(f"Error: {str(e)}\n")
 
-            try:
-                with open(file_path, 'r', encoding='utf-8') as source_file:
-                    content = source_file.read()
-                    f.write(content)
-            except FileNotFoundError:
-                f.write(f"[ERROR] File not found: {file_path}\n")
-            except Exception as e:
-                f.write(f"[ERROR] Could not read file: {file_path}\n")
-                f.write(f"Error: {str(e)}\n")
+        print(f"Saved: {output_file_path}")
 
+def save_project_structure_to_file(project_structure, output_file_path):
+    """Zapisuje strukturę projektu do jednego pliku."""
+    with output_file_path.open('w', encoding='utf-8') as f:
+        for directory, files in project_structure.items():
+            f.write(f"Directory: {directory}\n")
+            for file in files:
+                f.write(f"    {file}\n")
             f.write("\n")
-
-    print(f"Files collected in: {output_file}")
-
-    # Dodatkowo, zapisz strukturę projektu
-    try:
-        import subprocess
-        tree_output = subprocess.check_output(['tree']).decode('utf-8')
-        with open('tree', 'w', encoding='utf-8') as f:
-            f.write(tree_output)
-        print("Project structure saved in 'tree' file")
-    except Exception as e:
-        print(f"Could not save project structure: {str(e)}")
-
+    print(f"Project structure saved in: {output_file_path}")
 
 if __name__ == "__main__":
-    collect_project_files()
+    # Parametry
+    root_dir = Path("C:/Users/marci/Documents/GitHub/receipts-manager")
+    output_dir = Path("exports")
+    
+    # Tworzenie katalogu wyjściowego
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Skanowanie struktury projektu
+    print(f"Scanning project directory: {root_dir}")
+    project_structure = scan_project_structure(root_dir)
+
+    # Zapisanie zawartości plików do osobnych plików dla każdego katalogu
+    save_files_by_directory(project_structure, output_dir)
+
+    # Zapisanie struktury projektu
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    save_project_structure_to_file(project_structure, output_dir / f'project_structure_{timestamp}.txt')

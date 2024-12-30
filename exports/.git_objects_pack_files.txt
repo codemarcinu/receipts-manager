@@ -1,0 +1,23 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.idx
+================================================================================
+
+[ERROR] Could not read file: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.idx
+Error: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.pack
+================================================================================
+
+[ERROR] Could not read file: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.pack
+Error: 'utf-8' codec can't decode byte 0x92 in position 12: invalid start byte
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.rev
+================================================================================
+
+[ERROR] Could not read file: C:\Users\marci\Documents\GitHub\receipts-manager\.git\objects\pack\pack-eb4cd899c6fa38428f5eb78c9262193bcb498759.rev
+Error: 'utf-8' codec can't decode byte 0xa1 in position 15: invalid start byte

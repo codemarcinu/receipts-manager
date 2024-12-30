@@ -1,0 +1,8 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\.git\refs\heads ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\refs\heads\master
+================================================================================
+
+ebb73807911ca1af2dc5c7871d59ee538ebb7802

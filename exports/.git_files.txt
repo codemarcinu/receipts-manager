@@ -1,0 +1,57 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\.git ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\config
+================================================================================
+
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[submodule]
+	active = .
+[remote "origin"]
+	url = https://github.com/codemarcinu/receipts-manager.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+	vscode-merge-base = origin/master
+[lfs]
+	repositoryformatversion = 0
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\description
+================================================================================
+
+Unnamed repository; edit this file 'description' to name the repository.
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\FETCH_HEAD
+================================================================================
+
+ebb73807911ca1af2dc5c7871d59ee538ebb7802		branch 'master' of https://github.com/codemarcinu/receipts-manager
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\HEAD
+================================================================================
+
+ref: refs/heads/master
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\index
+================================================================================
+
+[ERROR] Could not read file: C:\Users\marci\Documents\GitHub\receipts-manager\.git\index
+Error: 'utf-8' codec can't decode byte 0x98 in position 14: invalid start byte
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\packed-refs
+================================================================================
+
+# pack-refs with: peeled fully-peeled sorted 
+ebb73807911ca1af2dc5c7871d59ee538ebb7802 refs/remotes/origin/master

@@ -1,0 +1,13 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\config ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\config\.env.example
+================================================================================
+
+OPENAI_API_KEY=your_api_key_here
+FLASK_SECRET_KEY=your_secret_key_here
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\config\.gitkeep
+================================================================================
+

@@ -1,0 +1,651 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\tests ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\conftest.py
+================================================================================
+
+import pytest
+from src.web import create_app
+from src.database import db as _db
+from datetime import datetime
+from src.config import Config
+
+
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+
+
+@pytest.fixture(scope='session')
+def app():
+    """Create and configure a new app instance for each test session."""
+    app = create_app(TestConfig)
+    
+    # Utworzenie kontekstu aplikacji
+    ctx = app.app_context()
+    ctx.push()
+
+    yield app
+
+    ctx.pop()
+
+
+@pytest.fixture(scope='function')
+def db(app):
+    """Create a new database for each test."""
+    with app.app_context():
+        _db.create_all()
+        yield _db
+        _db.session.close()
+        _db.drop_all()
+
+
+@pytest.fixture(scope='function')
+def client(app):
+    return app.test_client()
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_api.py
+================================================================================
+
+import pytest
+from src.web.app import app
+from src.database.manager import DatabaseManager
+from pathlib import Path
+import json
+import os
+from io import BytesIO
+
+
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    app.config['UPLOAD_FOLDER'] = Path('test_uploads')
+    with app.test_client() as client:
+        yield client
+    # Cleanup
+    if os.path.exists('test_uploads'):
+        for file in Path('test_uploads').glob('*'):
+            file.unlink()
+        Path('test_uploads').rmdir()
+
+
+@pytest.fixture
+def sample_receipt_data():
+    return {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'products': [
+            {
+                'name': 'Test Product 1',
+                'quantity': 2,
+                'price': 25.25,
+                'unit': 'szt'
+            },
+            {
+                'name': 'Test Product 2',
+                'quantity': 1,
+                'price': 50.00,
+                'unit': 'szt'
+            }
+        ],
+        'total': 100.50
+    }
+
+
+def test_index(client):
+    """Test strony głównej"""
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b'Smart Zapasy' in response.data
+
+
+def test_upload_no_file(client):
+    """Test uploadu bez pliku"""
+    response = client.post('/upload')
+    assert response.status_code == 302  # Redirect
+
+
+def test_upload_invalid_file(client):
+    """Test uploadu nieprawidłowego pliku"""
+    data = {
+        'receipt': (BytesIO(b'invalid file content'), 'test.txt')
+    }
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
+    assert response.status_code == 302  # Redirect
+
+
+def test_upload_valid_file(client):
+    """Test uploadu prawidłowego pliku"""
+    # Tworzenie przykładowego obrazu PNG
+    from PIL import Image
+    import io
+
+    img = Image.new('RGB', (100, 100), color='white')
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+
+    data = {
+        'receipt': (BytesIO(img_byte_arr), 'test.png')
+    }
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
+    assert response.status_code == 200
+    assert b'Weryfikacja' in response.data
+
+
+def test_save_receipt(client, sample_receipt_data):
+    """Test zapisywania paragonu"""
+    response = client.post('/save',
+                           data=json.dumps(sample_receipt_data),
+                           content_type='application/json')
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data['success'] is True
+
+
+def test_save_receipt_invalid_data(client):
+    """Test zapisywania paragonu z nieprawidłowymi danymi"""
+    invalid_data = {
+        'store': 'Test Store',
+        # brak wymaganych pól
+    }
+    response = client.post('/save',
+                           data=json.dumps(invalid_data),
+                           content_type='application/json')
+    assert response.status_code == 400
+    data = json.loads(response.data)
+    assert data['success'] is False
+
+
+def test_list_receipts(client):
+    """Test listy paragonów"""
+    response = client.get('/receipts')
+    assert response.status_code == 200
+    assert b'Lista paragon' in response.data
+
+
+def test_view_receipt(client, sample_receipt_data):
+    """Test widoku szczegółów paragonu"""
+    # Najpierw zapisz paragon
+    response = client.post('/save',
+                           data=json.dumps(sample_receipt_data),
+                           content_type='application/json')
+    data = json.loads(response.data)
+    receipt_id = data['receipt_id']
+
+    # Następnie sprawdź widok szczegółów
+    response = client.get(f'/receipt/{receipt_id}')
+    assert response.status_code == 200
+    assert b'Test Store' in response.data
+
+
+def test_view_nonexistent_receipt(client):
+    """Test widoku nieistniejącego paragonu"""
+    response = client.get('/receipt/999')
+    assert response.status_code == 302  # Redirect
+# API tests
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_database.py
+================================================================================
+
+import pytest
+from src.database.manager import DatabaseManager
+from src.database.models import Receipt, ReceiptItem
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import os
+from datetime import datetime
+
+
+@pytest.fixture
+def test_db():
+    """Tworzy tymczasową bazę danych dla testów"""
+    test_db_path = "sqlite:///test_receipts.db"
+    engine = create_engine(test_db_path)
+
+    # Tworzenie tabel
+    from src.database.models import Base
+    Base.metadata.create_all(engine)
+
+    yield test_db_path
+
+    # Czyszczenie po testach
+    os.remove("test_receipts.db")
+
+
+@pytest.fixture
+def db_manager(test_db):
+    """Tworzy instancję DatabaseManager z testową bazą"""
+    os.environ['DATABASE_URL'] = test_db
+    manager = DatabaseManager()
+    yield manager
+    manager.session.close()
+
+
+def test_save_receipt(db_manager):
+    """Test zapisywania paragonu"""
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Test Product 1',
+                'quantity': 2,
+                'price': 25.25,
+                'unit': 'szt'
+            },
+            {
+                'name': 'Test Product 2',
+                'quantity': 1,
+                'price': 50.00,
+                'unit': 'szt'
+            }
+        ]
+    }
+
+    # Zapisanie paragonu
+    receipt = db_manager.save_receipt(receipt_data)
+
+    # Sprawdzenie czy paragon został zapisany
+    assert receipt.id is not None
+    assert receipt.store == 'Test Store'
+    assert receipt.total == 100.50
+    assert len(receipt.items) == 2
+
+
+def test_get_receipts(db_manager):
+    """Test pobierania listy paragonów"""
+    # Dodanie testowych paragonów
+    for i in range(3):
+        receipt_data = {
+            'store': f'Test Store {i}',
+            'date': '2024-01-20',
+            'total': 100.00 + i,
+            'items': [
+                {
+                    'name': f'Test Product {i}',
+                    'quantity': 1,
+                    'price': 100.00 + i,
+                    'unit': 'szt'
+                }
+            ]
+        }
+        db_manager.save_receipt(receipt_data)
+
+    # Pobranie paragonów
+    receipts = db_manager.get_receipts()
+
+    # Sprawdzenie wyników
+    assert len(receipts) == 3
+    assert all(isinstance(r, Receipt) for r in receipts)
+    assert receipts[0].total > receipts[1].total  # Sprawdzenie sortowania
+
+
+def test_get_receipt(db_manager):
+    """Test pobierania pojedynczego paragonu"""
+    # Dodanie testowego paragonu
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Test Product',
+                'quantity': 1,
+                'price': 100.50,
+                'unit': 'szt'
+            }
+        ]
+    }
+    saved_receipt = db_manager.save_receipt(receipt_data)
+
+    # Pobranie paragonu
+    receipt = db_manager.get_receipt(saved_receipt.id)
+
+    # Sprawdzenie wyników
+    assert receipt is not None
+    assert receipt.id == saved_receipt.id
+    assert receipt.store == 'Test Store'
+    assert receipt.total == 100.50
+    assert len(receipt.items) == 1
+
+
+def test_receipt_not_found(db_manager):
+    """Test pobierania nieistniejącego paragonu"""
+    receipt = db_manager.get_receipt(999)
+    assert receipt is None
+
+
+def test_inventory_management(db_manager):
+    """Test zarządzania stanem magazynowym"""
+    # Najpierw dodajmy testowy paragon
+    receipt_data = {
+        'store': 'Test Store',
+        'date': '2024-01-20',
+        'total': 100.50,
+        'items': [
+            {
+                'name': 'Produkt testowy 1',
+                'quantity': 5,
+                'price': 20.00,
+                'unit': 'szt',
+                'current_quantity': 5,
+                'expiry_date': '2024-06-20',
+                'notes': 'Notatka testowa'
+            },
+            {
+                'name': 'Produkt testowy 2',
+                'quantity': 2,
+                'price': 10.25,
+                'unit': 'kg',
+                'current_quantity': 2,
+                'expiry_date': None,
+                'notes': None
+            }
+        ]
+    }
+
+    # Zapisz paragon
+    receipt = db_manager.save_receipt(receipt_data)
+    assert receipt is not None
+
+    # Pobierz stan magazynowy
+    inventory = db_manager.get_inventory_items()
+    assert len(inventory) == 2
+
+    # Sprawdź czy stany są poprawne
+    first_item = inventory[0]
+    assert first_item.name == 'Produkt testowy 1'
+    assert first_item.current_quantity == 5
+
+    # Zaktualizuj ilość pierwszego produktu
+    success = db_manager.update_item_quantity(first_item.id, 3, "Zużyto 2 sztuki")
+    assert success is True
+
+    # Sprawdź czy aktualizacja się powiodła
+    updated_inventory = db_manager.get_inventory_items()
+    updated_item = next(item for item in updated_inventory if item.id == first_item.id)
+    assert updated_item.current_quantity == 3
+    assert "Zużyto 2 sztuki" in updated_item.notes
+# Database tests
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_hello_world.py
+================================================================================
+
+def test_hello_world():
+    assert 1 + 1 == 2
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_ocr.py
+================================================================================
+
+import pytest
+from src.services.ocr import OCRService
+from pathlib import Path
+from unittest.mock import Mock, patch
+import os
+
+
+@pytest.fixture
+def mock_vision_client():
+    with patch('src.services.ocr.vision.ImageAnnotatorClient') as mock:
+        yield mock
+
+
+@pytest.fixture
+def ocr_service(mock_vision_client):
+    return OCRService("dummy_path")
+
+
+def test_extract_store():
+    """Test wyciągania nazwy sklepu z tekstu"""
+    ocr = OCRService("dummy_path")
+    sample_text = """BIEDRONKA
+    ul. Przykładowa 123
+    01-234 Warszawa
+    2024-01-20"""
+
+    assert ocr._extract_store(sample_text) == "BIEDRONKA"
+
+
+def test_extract_date():
+    """Test wyciągania daty z tekstu"""
+    ocr = OCRService("dummy_path")
+    sample_text = """BIEDRONKA
+    Data: 2024-01-20"""
+
+    result = ocr._extract_date(sample_text)
+    assert result is not None
+    assert result.year == 2024
+    assert result.month == 1
+    assert result.day == 20
+
+
+def test_parse_product_line():
+    """Test parsowania linii z produktem"""
+    ocr = OCRService("dummy_path")
+    sample_lines = [
+        "Chleb 3.99",
+        "Masło 200g 7.99",
+        "Mleko 1l 4.50",
+        "Jabłka 1.5kg 7.49"
+    ]
+
+    expected_results = [
+        {'name': 'Chleb', 'quantity': 1, 'unit': 'szt', 'price': 3.99},
+        {'name': 'Masło', 'quantity': 200, 'unit': 'g', 'price': 7.99},
+        {'name': 'Mleko', 'quantity': 1, 'unit': 'l', 'price': 4.50},
+        {'name': 'Jabłka', 'quantity': 1.5, 'unit': 'kg', 'price': 7.49}
+    ]
+
+    for line, expected in zip(sample_lines, expected_results):
+        result = ocr._parse_product_line(line)
+        assert result is not None
+        assert result['name'] == expected['name']
+        assert result['price'] == expected['price']
+
+
+@pytest.mark.integration
+def test_process_image(ocr_service, mock_vision_client):
+    """Test przetwarzania całego paragonu"""
+    # Przygotowanie mocka odpowiedzi z Google Vision
+    mock_response = Mock()
+    mock_response.text_annotations = [Mock(description="""
+    BIEDRONKA
+    ul. Przykładowa 123
+    2024-01-20
+
+    Chleb 3.99
+    Masło 200g 7.99
+    Mleko 1l 4.50
+
+    SUMA PLN 16.48
+    """)]
+    mock_response.error = Mock(message=None)
+
+    mock_vision_client.return_value.text_detection.return_value = mock_response
+
+    # Wykonanie testu
+    result = ocr_service.process_image("dummy_path")
+
+    # Sprawdzenie rezultatów
+    assert result is not None
+    assert result['store'] == "BIEDRONKA"
+    assert result['date'] == "2024-01-20"
+    assert len(result['products']) == 3
+    assert result['total'] == 16.48
+# OCR tests
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_ocr_basic.py
+================================================================================
+
+import pytest
+import os
+from src.config import config
+from src.services.ocr import OCRService
+
+
+def test_ocr_credentials_exist():
+    """Test sprawdzający czy plik credentials istnieje"""
+    assert os.path.exists(config.GOOGLE_CLOUD_CREDENTIALS)
+    assert os.path.isfile(config.GOOGLE_CLOUD_CREDENTIALS)
+
+
+def test_ocr_service_creation():
+    """Test sprawdzający czy można utworzyć instancję OCRService"""
+    try:
+        service = OCRService(config.GOOGLE_CLOUD_CREDENTIALS)
+        assert service is not None
+    except Exception as e:
+        pytest.fail(f"Nie udało się utworzyć OCRService: {str(e)}")
+
+
+def test_ocr_image_processing():
+    """Test sprawdzający przetwarzanie przykładowego paragonu"""
+    # Ścieżka do przykładowego paragonu
+    test_image = os.path.join(config.UPLOAD_FOLDER, "paragon.PNG")
+
+    # Sprawdź czy plik istnieje
+    if not os.path.exists(test_image):
+        pytest.skip("Brak pliku testowego paragonu")
+
+    # Utwórz serwis OCR
+    service = OCRService(config.GOOGLE_CLOUD_CREDENTIALS)
+
+    # Przetwórz obraz
+    try:
+        result = service.process_image(test_image)
+
+        # Sprawdź czy wynik zawiera wszystkie wymagane pola
+        assert isinstance(result, dict)
+        assert 'store' in result
+        assert 'date' in result
+        assert 'products' in result
+        assert 'total' in result
+
+        # Sprawdź czy lista produktów nie jest pusta
+        assert isinstance(result['products'], list)
+
+        # Jeśli są produkty, sprawdź strukturę pierwszego
+        if result['products']:
+            product = result['products'][0]
+            assert 'name' in product
+            assert 'quantity' in product
+            assert 'unit' in product
+            assert 'price' in product
+
+    except Exception as e:
+        pytest.fail(f"Błąd podczas przetwarzania obrazu: {str(e)}")
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\test_receipts.py
+================================================================================
+
+"""
+Testy dla operacji CRUD na paragonach.
+"""
+from flask_sqlalchemy import SQLAlchemy
+import pytest
+from datetime import date
+from typing import Any
+from src.database.models import Receipt, Product
+from src.database import db
+
+
+@pytest.fixture
+def test_receipt(db: SQLAlchemy):
+    """Fixture tworzący testowy paragon z produktami."""
+    receipt = Receipt(
+        purchase_date=date.today(),
+        store_name="Test Store",
+        total_amount=100.00,
+        status="new"
+    )
+    db.session.add(receipt)
+    db.session.flush()  # Potrzebujemy ID paragonu przed dodaniem produktów
+
+    # Dodanie testowych produktów
+    products = [
+        Product(
+            receipt_id=receipt.id,
+            name=f"Product {i}",
+            unit_price=10.00,
+            quantity=1,
+            unit="szt"
+        ) for i in range(3)
+    ]
+    for product in products:
+        db.session.add(product)
+    
+    db.session.commit()
+    
+    yield receipt
+    
+    # Czyszczenie po teście (jeśli paragon nadal istnieje)
+    try:
+        db_receipt = db.session.get(Receipt, receipt.id)
+        if db_receipt:
+            db.session.delete(db_receipt)
+            db.session.commit()
+    except:
+        db.session.rollback()
+
+
+def test_delete_receipt_success(client: Any, test_receipt: Receipt):
+    """Test poprawnego usuwania paragonu."""
+    # Przygotowanie
+    receipt_id = test_receipt.id
+    product_ids = [p.id for p in test_receipt.products]
+
+    # Wykonanie
+    response = client.delete(f'/receipts/{receipt_id}')
+    
+    # Sprawdzenie
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['success'] is True
+    
+    # Sprawdzenie czy paragon został usunięty
+    assert db.session.get(Receipt, receipt_id) is None
+    
+    # Sprawdzenie czy produkty zostały usunięte
+    for product_id in product_ids:
+        assert db.session.get(Product, product_id) is None
+
+
+def test_delete_nonexistent_receipt(client: Any, db: Any):
+    """Test próby usunięcia nieistniejącego paragonu."""
+    # Upewnijmy się, że baza danych jest zainicjalizowana
+    response = client.delete('/receipts/99999')
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data['success'] is False
+    assert 'nie znaleziono' in data['message'].lower()
+
+
+def test_delete_receipt_with_db_error(client: Any, test_receipt: Receipt, monkeypatch: Any):
+    """Test obsługi błędu bazy danych podczas usuwania."""
+    def mock_db_error(*args, **kwargs):
+        raise Exception("Database error")
+    
+    # Podmiana metody delete na wersję wywołującą błąd
+    monkeypatch.setattr(db.session, 'delete', mock_db_error)
+    
+    response = client.delete(f'/receipts/{test_receipt.id}')
+    
+    assert response.status_code == 500
+    data = response.get_json()
+    assert data['success'] is False
+    assert 'błąd' in data['message'].lower()
+    
+    # Sprawdzenie czy paragon nadal istnieje (rollback zadziałał)
+    assert db.session.get(Receipt, test_receipt.id) is not None
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\tests\__init__.py
+================================================================================
+

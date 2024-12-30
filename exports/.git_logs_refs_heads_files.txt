@@ -1,0 +1,8 @@
+=== Directory: C:\Users\marci\Documents\GitHub\receipts-manager\.git\logs\refs\heads ===
+
+
+================================================================================
+File: C:\Users\marci\Documents\GitHub\receipts-manager\.git\logs\refs\heads\master
+================================================================================
+
+0000000000000000000000000000000000000000 ebb73807911ca1af2dc5c7871d59ee538ebb7802 codemarcinu <163682921+codemarcinu@users.noreply.github.com> 1735563300 +0100	clone: from https://github.com/codemarcinu/receipts-manager.git
