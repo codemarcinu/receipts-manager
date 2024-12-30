@@ -1,3 +1,5 @@
+import re
+from typing import List, Tuple
 from google.cloud import vision
 from pathlib import Path
 from typing import Dict, Any
@@ -48,12 +50,16 @@ def process_receipt_image(image_path: str) -> Dict[str, Any]:
                 'products': []
             }
 
-        # TODO: Implementacja szczegółowej analizy tekstu
-        # Na razie zwracamy podstawowe dane
+        # Analiza rozpoznanego tekstu
+        full_text = texts[0].description
+        store_name = extract_store_name(full_text)
+        total = extract_total_amount(full_text)
+        products = extract_products(full_text)
+
         return {
-            'store': 'Nieznany',  # TODO: Wykrywanie nazwy sklepu
-            'total_amount': 0.0,  # TODO: Wykrywanie kwoty
-            'products': []  # TODO: Wykrywanie produktów
+            'store': store_name,
+            'total_amount': total,
+            'products': products
         }
 
     except FileNotFoundError as e:
@@ -66,24 +72,52 @@ def process_receipt_image(image_path: str) -> Dict[str, Any]:
 
 
 def extract_store_name(text: str) -> str:
-    """
-    Próbuje wyekstrahować nazwę sklepu z tekstu paragonu.
-    TODO: Implementacja
-    """
+    # Typowe słowa kluczowe dla nazw sklepów
+    store_keywords = ['sp. z o.o.', 's.a.', 'sklep', 'market', 'supermarket']
+    
+    # Szukaj w pierwszych liniach tekstu
+    first_lines = text.split('\n')[:3]
+    for line in first_lines:
+        line = line.strip().upper()
+        if any(keyword.upper() in line for keyword in store_keywords):
+            return line
+        # Pierwsza linia często zawiera nazwę sklepu
+        if len(line) > 3 and not any(char.isdigit() for char in line):
+            return line
+    
     return "Nieznany"
 
-
 def extract_total_amount(text: str) -> float:
-    """
-    Próbuje wyekstrahować kwotę całkowitą z tekstu paragonu.
-    TODO: Implementacja
-    """
+    # Szukaj wzorców kwot typu "SUMA PLN 123.45" lub "RAZEM 123,45"
+    patterns = [
+        r'(?:SUMA|RAZEM|TOTAL).*?(\d+[.,]\d{2})',
+        r'(?:PLN|ZŁ).*?(\d+[.,]\d{2})',
+        r'(\d+[.,]\d{2})(?:\s*(?:PLN|ZŁ))'
+    ]
+    
+    for pattern in patterns:
+        matches = re.finditer(pattern, text.upper())
+        amounts = [float(m.group(1).replace(',', '.')) for m in matches]
+        if amounts:
+            return max(amounts)
+    
     return 0.0
 
-
-def extract_products(text: str) -> list:
-    """
-    Próbuje wyekstrahować listę produktów z tekstu paragonu.
-    TODO: Implementacja
-    """
-    return []
+def extract_products(text: str) -> List[Dict[str, Any]]:
+    products = []
+    lines = text.split('\n')
+    
+    # Wzorzec dla linii z produktem: nazwa i cena
+    product_pattern = r'^(.*?)\s+(\d+[.,]\d{2})\s*(?:PLN|ZŁ)?$'
+    
+    for line in lines:
+        match = re.match(product_pattern, line.strip())
+        if match:
+            name, price = match.groups()
+            if len(name.strip()) > 2:  # Ignoruj zbyt krótkie nazwy
+                products.append({
+                    'name': name.strip(),
+                    'price': float(price.replace(',', '.'))
+                })
+    
+    return products
