@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Stan magazynowy{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="card-title">Stan magazynowy</h5>
+            <button onclick="refreshInventory()" class="btn btn-outline-primary btn-sm">
+                Odśwież
+            </button>
+        </div>
+
+        {% if items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th class="text-center">Stan</th>
+                        <th>Jednostka</th>
+                        <th>Data ważności</th>
+                        <th>Notatki</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr id="item-row-{{ item.id }}">
+                        <td>{{ item.name }}</td>
+                        <td class="text-center current-quantity">{{ "%.3f"|format(item.current_quantity) if item.unit in ['kg', 'l'] else item.current_quantity|int }}</td>
+                        <td>{{ item.unit }}</td>
+                        <td>{{ item.expiry_date.strftime('%d.%m.%Y') if item.expiry_date else '-' }}</td>
+                        <td class="notes-cell">
+                            {% if item.notes %}
+                            <button class="btn btn-sm btn-outline-info" onclick="showNotes('{{ item.id }}', `{{ item.notes }}`)">
+                                Pokaż notatki
+                            </button>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="updateQuantity('{{ item.id }}')">
+                                Aktualizuj
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            Brak produktów w magazynie
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal do aktualizacji ilości -->
+<div class="modal fade" id="updateQuantityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Aktualizacja stanu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="itemId">
+                <div class="mb-3">
+                    <label for="newQuantity" class="form-label">Nowa ilość</label>
+                    <input type="number" class="form-control" id="newQuantity" step="0.001" required>
+                </div>
+                <div class="mb-3">
+                    <label for="updateNotes" class="form-label">Notatka (opcjonalnie)</label>
+                    <textarea class="form-control" id="updateNotes" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" onclick="saveQuantityUpdate()">Zapisz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal do wyświetlania notatek -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Historia notatek</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="notesContent" class="p-3 bg-light"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+const updateQuantity = (itemId) => {
+    document.getElementById('itemId').value = itemId;
+    const currentQuantity = document.querySelector(`#item-row-${itemId} .current-quantity`).textContent.trim();
+    document.getElementById('newQuantity').value = currentQuantity;
+    document.getElementById('updateNotes').value = '';
+    new bootstrap.Modal(document.getElementById('updateQuantityModal')).show();
+};
+
+const showNotes = (itemId, notes) => {
+    document.getElementById('notesContent').textContent = notes;
+    new bootstrap.Modal(document.getElementById('notesModal')).show();
+};
+
+const saveQuantityUpdate = async () => {
+    const itemId = document.getElementById('itemId').value;
+    const newQuantity = document.getElementById('newQuantity').value;
+    const notes = document.getElementById('updateNotes').value;
+
+    try {
+        const response = await fetch('/api/update_quantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                quantity: newQuantity,
+                notes: notes
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Odśwież stronę po udanej aktualizacji
+            location.reload();
+        } else {
+            alert(`Błąd: ${data.message}`);
+        }
+    } catch (error) {
+        alert('Wystąpił błąd podczas aktualizacji');
+    }
+};
+
+const refreshInventory = () => {
+    location.reload();
+};
+</script>
+{% endblock %}

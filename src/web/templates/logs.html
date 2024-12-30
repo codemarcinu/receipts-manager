@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Logi aplikacji{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="card-title">Logi aplikacji</h5>
+            <div>
+                <a href="{{ url_for('logs_view', lines=100) }}" class="btn btn-outline-secondary btn-sm">
+                    Ostatnie 100 linii
+                </a>
+                <a href="{{ url_for('logs_view', lines=500) }}" class="btn btn-outline-secondary btn-sm">
+                    Ostatnie 500 linii
+                </a>
+                <a href="{{ url_for('logs_view') }}" class="btn btn-outline-secondary btn-sm">
+                    Wszystkie
+                </a>
+                <button onclick="window.location.reload()" class="btn btn-outline-primary btn-sm">
+                    Odśwież
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <input type="text" id="logFilter" class="form-control" placeholder="Filtruj logi...">
+        </div>
+
+        <div class="log-container bg-light p-3" style="max-height: 600px; overflow-y: auto;">
+            <pre id="logContent" class="mb-0"><code>{% for log in logs %}{{ log }}{% endfor %}</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('logFilter').addEventListener('input', function(e) {
+    const filterText = e.target.value.toLowerCase();
+    const logContent = document.getElementById('logContent');
+    const originalLogs = `{% for log in logs %}{{ log }}{% endfor %}`;
+
+    if (!filterText) {
+        logContent.innerHTML = originalLogs;
+        return;
+    }
+
+    const filteredLogs = originalLogs.split('\n')
+        .filter(line => line.toLowerCase().includes(filterText))
+        .join('\n');
+
+    logContent.innerHTML = filteredLogs;
+});
+</script>
+{% endblock %}

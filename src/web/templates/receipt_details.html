@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Szczegóły paragonu{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="card-title mb-0">Szczegóły paragonu</h5>
+            <a href="{{ url_for('list_receipts') }}" class="btn btn-outline-primary btn-sm">
+                Powrót do listy
+            </a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr>
+                        <th>Sklep:</th>
+                        <td>{{ receipt.store }}</td>
+                    </tr>
+                    <tr>
+                        <th>Data:</th>
+                        <td>{{ receipt.date.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Suma:</th>
+                        <td>{{ "%.2f"|format(receipt.total) }} zł</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <h6 class="mb-3">Lista produktów</h6>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>Ilość</th>
+                        <th>Jednostka</th>
+                        <th class="text-end">Cena</th>
+                        <th class="text-end">Wartość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in receipt.items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ "%.3f"|format(item.quantity) if item.unit in ['kg', 'l'] else item.quantity|int }}</td>
+                        <td>{{ item.unit }}</td>
+                        <td class="text-end">{{ "%.2f"|format(item.price) }} zł</td>
+                        <td class="text-end">{{ "%.2f"|format(item.price * item.quantity) }} zł</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <td colspan="4" class="text-end">Suma:</td>
+                        <td class="text-end">{{ "%.2f"|format(receipt.total) }} zł</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {% if receipt.created_at %}
+        <div class="text-muted mt-3">
+            <small>Data dodania: {{ receipt.created_at.strftime('%d.%m.%Y %H:%M:%S') }}</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

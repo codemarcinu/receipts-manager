@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}System Zarządzania Paragonami{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+
+    <link rel="preload" href="{{ url_for('static', filename='js/main.js') }}" as="script">
+
+    <style> /* Add this to style.css or within the <style> tag in head*/
+        .md-alert {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .md-alert.animate-fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-roboto antialiased flex flex-col min-h-screen">
+    <a href="#main-content" class="fixed top-2 left-2 z-50 bg-primary-500 text-white px-4 py-2 rounded-lg transform -translate-y-full focus:translate-y-0 transition-transform duration-300">
+        Przejdź do głównej treści
+    </a>
+
+    <header class="bg-white shadow-material-1">
+        <div class="max-w-screen-xl mx-auto py-4 px-4 lg:px-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary-500">Moje Paragony</h1>
+
+            <nav class="flex items-center justify-between w-full flex-wrap">  <!-- Combined Navigation -->
+                <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-expanded="false" class="md:hidden md-button-icon text-primary-500 hover:bg-primary-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <ul id="main-nav" class="hidden w-full md:flex md:w-auto md:items-center md:ml-auto space-x-4 md:space-x-6">
+                    <li><a href="{{ url_for('receipts.index') }}" class="md-nav-link {% if request.endpoint == 'receipts.index' %}text-primary-500 font-semibold{% endif %} hover:text-primary-600 transition-colors">Strona Główna</a></li>
+                    <li><a href="{{ url_for('receipts.receipt_list') }}" class="md-nav-link {% if request.endpoint == 'receipts.receipt_list' %}text-primary-500 font-semibold{% endif %} hover:text-primary-600 transition-colors">Lista Paragonów</a></li>
+                    <li><a href="{{ url_for('receipts.upload') }}" class="md-button bg-primary-500 text-white hover:bg-primary-600 transition-colors">Dodaj Paragon</a></li>
+                </ul>
+            </nav>
+
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-grow md-container mt-8 mb-10 px-4 w-full max-w-screen-xl mx-auto">
+        <div id="notification-container" class="fixed top-20 right-6 z-50 space-y-2">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="md-alert md-alert-{{ category }} animate-bounce-in shadow-material-2">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}  <!--- add base content block here --->
+
+    </main>
+
+    <footer class="bg-gray-100 py-6 mt-auto">
+        <div class="md-container text-center max-w-screen-xl mx-auto px-4">
+            <p class="text-gray-600">&copy; {{ current_year }} System Zarządzania Paragonami</p>
+            <div class="mt-2 text-sm text-gray-500">Projekt zarządzania paragonami i inwentaryzacji</div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>  <!-- Single script include -->
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('main-nav');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const isExpanded = !mobileMenu.classList.contains('hidden');
+            mobileMenuToggle.setAttribute('aria-expanded', isExpanded);
+        });
+
+
+         //Make sure to include main.js after body has finished loading with defer
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            function removeNotifications() {
+                const notifications = document.querySelectorAll('#notification-container .md-alert');
+                notifications.forEach(notification => {
+                    notification.classList.add('animate-fade-out');
+                    notification.addEventListener('transitionend', () => { notification.remove();});
+                });
+            }
+            setTimeout(removeNotifications, 5000);
+
+        });
+    </script>
+</body>
+</html>
+

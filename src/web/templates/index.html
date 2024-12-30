@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="jumbotron mt-4">
+        <h1 class="display-4">System Zarządzania Paragonami</h1>
+        <p class="lead">Witaj w systemie zarządzania paragonami i kontroli wydatków.</p>
+        <hr class="my-4">
+        <p>Wybierz jedną z dostępnych opcji:</p>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Dodaj nowy paragon</h5>
+                        <p class="card-text">Zeskanuj lub wgraj zdjęcie paragonu do systemu.</p>
+                        <a href="{{ url_for('receipts.upload') }}" class="btn btn-primary">Dodaj paragon</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Lista paragonów</h5>
+                        <p class="card-text">Przeglądaj i zarządzaj zapisanymi paragonami.</p>
+                        <a href="{{ url_for('receipts.receipt_list') }}" class="btn btn-secondary">Zobacz listę</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

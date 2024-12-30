@@ -1,0 +1,20 @@
+{
+  "name": "receipts-manager",
+  "version": "1.0.0",
+  "description": "System zarządzania paragonami",
+  "scripts": {
+    "build": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --minify",
+    "watch": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --watch",
+    "dev": "npm run watch",
+    "clean": "rm -f ./src/web/static/css/main.css",
+    "build:prod": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "@material/web": "^1.0.0"
+  }
+}

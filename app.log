@@ -1,0 +1,22 @@
+2024-12-27 21:47:25,704 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:47:25,705 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:47:25,707 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:47:26,206 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:47:26,213 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:49:44,488 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/scripts/init_db.py', reloading
+2024-12-27 21:49:44,644 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:49:45,230 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:49:45,233 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:52:32,528 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/setup.py', reloading
+2024-12-27 21:52:32,690 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:52:33,219 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:52:33,221 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:10,610 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:54:10,610 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:54:10,611 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:54:11,109 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:54:11,111 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:40,238 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET / HTTP/1.1[0m" 404 -
+2024-12-27 21:54:40,536 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

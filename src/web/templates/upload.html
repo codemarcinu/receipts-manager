@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Dodaj Nowy Paragon{% endblock %}
+
+{% block content %}
+<div class="md-container px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Nagłówek -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Dodaj Nowy Paragon</h1>
+            <p class="mt-2 text-gray-600">Wypełnij formularz i dodaj zdjęcie paragonu</p>
+        </div>
+
+        <!-- Formularz -->
+        <form method="POST" enctype="multipart/form-data" class="md-card bg-white rounded-lg shadow-material-1 p-6">
+            {{ form.csrf_token }}
+            
+            <!-- Nazwa sklepu -->
+            <div class="mb-6">
+                {{ form.store_name.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.store_name(class="md-input w-full") }}
+                {% if form.store_name.errors %}
+                    {% for error in form.store_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Data zakupu -->
+            <div class="mb-6">
+                {{ form.purchase_date.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.purchase_date(class="md-input w-full", type="date") }}
+                {% if form.purchase_date.errors %}
+                    {% for error in form.purchase_date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Upload zdjęcia -->
+            <div class="mb-6">
+                <div class="space-y-2">
+                    {{ form.receipt_image.label(class="block text-sm font-medium text-gray-700") }}
+                    <div class="flex items-center space-x-2">
+                        <label class="md-button-outlined cursor-pointer">
+                            <span>Wybierz plik</span>
+                            {{ form.receipt_image(class="hidden", onchange="showPreview(event)") }}
+                        </label>
+                        <span id="file-name" class="text-sm text-gray-500">Nie wybrano pliku</span>
+                    </div>
+                    {% if form.receipt_image.errors %}
+                        {% for error in form.receipt_image.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <!-- Podgląd zdjęcia -->
+                <div id="image-preview" class="hidden mt-4">
+                    <img id="preview" class="max-w-full h-auto rounded-lg shadow-sm" src="" alt="Podgląd paragonu">
+                </div>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="flex justify-end space-x-2">
+                <a href="{{ url_for('receipts.receipt_list') }}" 
+                   class="md-button-outlined text-gray-700 hover:bg-gray-50">
+                    Anuluj
+                </a>
+                <button type="submit" class="md-button bg-primary-500 text-white hover:bg-primary-600">
+                    Dodaj paragon
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showPreview(event) {
+    const input = event.target;
+    const preview = document.getElementById('preview');
+    const previewContainer = document.getElementById('image-preview');
+    const fileName = document.getElementById('file-name');
+    
+    fileName.textContent = input.files[0]?.name || 'Nie wybrano pliku';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        previewContainer.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}
