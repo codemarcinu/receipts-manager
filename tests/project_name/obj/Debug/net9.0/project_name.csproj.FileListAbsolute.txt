@@ -1,0 +1,15 @@
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\bin\Debug\net9.0\project_name.exe
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\bin\Debug\net9.0\project_name.deps.json
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\bin\Debug\net9.0\project_name.runtimeconfig.json
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\bin\Debug\net9.0\project_name.dll
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\bin\Debug\net9.0\project_name.pdb
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.AssemblyInfoInputs.cache
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.AssemblyInfo.cs
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.csproj.CoreCompileInputs.cache
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.sourcelink.json
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.dll
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\refint\project_name.dll
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.pdb
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\project_name.genruntimeconfig.cache
+C:\Users\marci\Documents\GitHub\receipts-manager\tests\project_name\obj\Debug\net9.0\ref\project_name.dll
