@@ -42,3 +42,6 @@ project_files_content.txt
 project_analysis.json
 project_analysis.json
 config/credentials.json
+
+# Ignore Google Cloud Vision credentials
+config/credentials/google-cloud-vision.json
