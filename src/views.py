@@ -42,6 +42,12 @@ bp = Blueprint('receipts', __name__, url_prefix='/receipts')
 
 errors = Blueprint('errors', __name__)
 
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # Obsługa błędów
 
@@ -397,3 +403,26 @@ def delete_receipt(receipt_id):
             'message': 'Wystąpił błąd podczas usuwania paragonu.'
 
         }), 500
+
+
+@bp.route('/receipts/upload', methods=['GET', 'POST'])
+def upload_receipt():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file selected')
+            return redirect(request.url)
+            
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected')
+            return redirect(request.url)
+            
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            flash('Receipt uploaded successfully')
+            return redirect(url_for('receipts.upload_receipt'))
+            
+    return render_template('upload.html')
