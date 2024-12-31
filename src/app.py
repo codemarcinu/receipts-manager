@@ -1,3 +1,4 @@
+from pathlib import Path
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -21,4 +22,5 @@ def create_app(config_class=Config):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    # Przykład użycia pathlib
+    file_path = Path("src/static/uploads")

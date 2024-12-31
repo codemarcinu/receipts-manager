@@ -1,0 +1,85 @@
+--- app.log ---
+2024-12-27 21:47:25,704 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:47:25,705 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:47:25,707 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:47:26,206 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:47:26,213 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:49:44,488 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/scripts/init_db.py', reloading
+2024-12-27 21:49:44,644 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:49:45,230 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:49:45,233 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:52:32,528 - werkzeug - INFO -  * Detected change in '/home/marcin/receipts-manager/setup.py', reloading
+2024-12-27 21:52:32,690 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:52:33,219 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:52:33,221 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:10,610 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-12-27 21:54:10,610 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-27 21:54:10,611 - werkzeug - INFO -  * Restarting with stat
+2024-12-27 21:54:11,109 - werkzeug - WARNING -  * Debugger is active!
+2024-12-27 21:54:11,111 - werkzeug - INFO -  * Debugger PIN: 175-725-212
+2024-12-27 21:54:40,238 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET / HTTP/1.1[0m" 404 -
+2024-12-27 21:54:40,536 - werkzeug - INFO - 127.0.0.1 - - [27/Dec/2024 21:54:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+
+
+--- config.py ---
+import os
+
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///receipts.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOAD_FOLDER = 'uploads'
+
+--- .env ---
+FLASK_APP=src.web:create_app
+FLASK_ENV=development
+FLASK_DEBUG=True
+SECRET_KEY=dev-key-change-in-production
+DATABASE_URL=sqlite:///data/zakupy.db
+
+--- error_handlers.py ---
+"""
+Moduł obsługi błędów dla aplikacji Flask.
+Definiuje handlery dla różnych kodów błędów HTTP.
+"""
+from flask import Blueprint, render_template
+from src.database import db
+
+errors = Blueprint('errors', __name__)
+
+@errors.app_errorhandler(404)
+def not_found_error(error):
+    """Obsługa błędu 404 - Nie znaleziono zasobu."""
+    return render_template('errors/404.html'), 404
+
+@errors.app_errorhandler(500)
+def internal_error(error):
+    """
+    Obsługa błędu 500 - Wewnętrzny błąd serwera.
+    W przypadku błędu wykonuje rollback sesji bazy danych.
+    """
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
+
+@errors.app_errorhandler(403)
+def forbidden_error(error):
+    """Obsługa błędu 403 - Brak dostępu."""
+    return render_template('errors/403.html'), 403
+
+--- pytest.log ---
+
+
+--- run.py ---
+# filepath: /C:/Users/marci/Documents/GitHub/receipts-manager/run.py
+from src.app import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+--- test_receipts.db ---
+Binary file - skipped content extraction
+
