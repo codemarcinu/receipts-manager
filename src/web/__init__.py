@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_compress import Compress
 from src.database import db, migrate
 from src.config import Config
 import logging
@@ -6,6 +7,13 @@ import logging
 
 def create_app():
     app = Flask(__name__)
+    Compress(app)
+    
+    # Enable Gzip compression for CSS files
+    app.config['COMPRESS_MIMETYPES'] = ['text/css', 'text/html', 'application/javascript']
+    app.config['COMPRESS_LEVEL'] = 6
+    app.config['COMPRESS_MIN_SIZE'] = 500
+
     app.config.from_object(Config)
 
     # Inicjalizacja rozszerzeń

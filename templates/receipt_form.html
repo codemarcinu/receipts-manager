@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj Paragon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .items-container {
+            margin-top: 20px;
+        }
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .submit-button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Dodaj Nowy Paragon</h2>
+        <form id="receiptForm" onsubmit="submitReceipt(event)">
+            <div class="form-group">
+                <label for="store">Sklep:</label>
+                <input type="text" id="store" name="store" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Data:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="total">Suma:</label>
+                <input type="number" id="total" name="total" step="0.01" required>
+            </div>
+            
+            <div class="items-container">
+                <h3>Produkty</h3>
+                <div id="itemsContainer"></div>
+                <button type="button" onclick="addItemRow()" style="margin: 10px 0;">Dodaj produkt</button>
+            </div>
+            
+            <button type="submit" class="submit-button">Zapisz paragon</button>
+        </form>
+    </div>
+
+    <script>
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Nazwa" required>
+                <input type="number" placeholder="Cena" step="0.01" required>
+                <input type="number" placeholder="Ilość" required>
+                <input type="text" placeholder="Jednostka" required>
+                <button type="button" onclick="this.parentElement.remove()">Usuń</button>
+            `;
+            container.appendChild(row);
+        }
+
+        async function submitReceipt(event) {
+            event.preventDefault();
+            
+            const items = Array.from(document.querySelectorAll('.item-row')).map(row => ({
+                name: row.children[0].value,
+                price: parseFloat(row.children[1].value),
+                quantity: parseInt(row.children[2].value),
+                unit: row.children[3].value
+            }));
+
+            const data = {
+                store: document.getElementById('store').value,
+                date: document.getElementById('date').value,
+                total: parseFloat(document.getElementById('total').value),
+                items: items
+            };
+
+            try {
+                const response = await fetch('/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/receipt/list';
+                } else {
+                    alert('Błąd podczas zapisywania paragonu');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Wystąpił błąd podczas zapisywania');
+            }
+        }
+
+        // Add initial item row
+        addItemRow();
+    </script>
+</body>
+</html>

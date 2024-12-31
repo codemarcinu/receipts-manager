@@ -1,30 +1,33 @@
 # System Zarządzania Paragonami - Dokumentacja Projektu
 
-## Stan Projektu na dzień 28.12.2024
+## Stan Projektu na dzień 28.01.2024
 
 ### Zrealizowane Komponenty
 
-#### 1. Struktura Bazy Danych
+#### 1. Frontend Framework
+- Zintegrowany Tailwind CSS
+- Własne komponenty Material Design
+- Responsywny interfejs
+- System komponentów z prefixem 'md-'
+
+#### 2. Struktura Bazy Danych
 - Modele: Receipt, Product, Category w `src.database.models`
 - Wykorzystanie SQLAlchemy z podstawowymi relacjami
 - System migracji z Flask-Migrate
 - Automatyczna inicjalizacja bazy przez skrypt
 
-#### 2. Interfejs Webowy
-- Formularze Flask-WTF do weryfikacji danych
-- Interfejs listy paragonów z funkcjami weryfikacji i usuwania
-- Formularz uploadu nowych paragonów
-- Obsługa błędów 404, 500 i 403
-- Responsywny interfejs z Bootstrap 5
-- Rozpoczęta implementacja Material Design
-- Konfiguracja Tailwind CSS (w trakcie)
-
-#### 3. Frontend
-- Base template z Bootstrap i Font Awesome
-- Szablony dla wszystkich widoków
-- Style CSS dla formularzy
-- Konfiguracja Tailwind CSS
-- Niestandardowe komponenty Material Design
+#### 3. Interfejs Webowy
+- Material Design komponenty:
+  - Cards (md-card)
+  - Buttons (md-button)
+  - Forms (md-input)
+  - Alerts (md-alert)
+  - Progress indicators (md-spinner, md-progress-bar)
+  - Tooltips (md-tooltip)
+- Animacje i przejścia
+- System powiadomień
+- Dostosowania pod dark mode
+- Wsparcie dla prefers-reduced-motion
 
 ### Struktura Projektu
 
@@ -37,7 +40,9 @@ src/
 │   ├── views.py              # Widoki Flask
 │   ├── error_handlers.py     # Obsługa błędów
 │   ├── static/
-│   │   ├── css/style.css     # Style CSS
+│   │   ├── css/
+│   │   │   ├── style.css     # Główne style Tailwind + Material
+│   │   │   └── main.css      # Generowany plik Tailwind
 │   │   └── js/ReceiptVerificationForm.js
 │   └── templates/
 │       ├── base.html         # Szablon bazowy
@@ -61,29 +66,38 @@ Pillow==10.1.0
 python-dotenv==1.0.0
 Werkzeug==3.0.1
 pytest==8.0.0
+tailwindcss==3.4.0
+postcss==8.4.0
+autoprefixer==10.4.0
 ```
 
 ## Elementy Do Implementacji
 
-### Priorytet 1: Uporządkowanie Projektu
+### Priorytet 1: Optymalizacja Frontend
+1. Dokończenie dark mode
+2. Optymalizacja bundle size CSS
+3. Implementacja dodatkowych komponentów Material Design
+4. Poprawa dostępności (ARIA labels)
+
+### Priorytet 2: Uporządkowanie Projektu
 1. Usunięcie zduplikowanych plików i szablonów
 2. Reorganizacja struktury views.py
 3. Uzupełnienie brakujących testów
 4. Dokończenie implementacji stylów CSS
 
-### Priorytet 2: Podstawowe Funkcjonalności
+### Priorytet 3: Podstawowe Funkcjonalności
 1. Implementacja pełnego systemu uploadu plików
 2. Dokończenie endpointów REST API
 3. Implementacja pełnej obsługi błędów
 4. System walidacji danych
 
-### Priorytet 3: Automatyzacja
+### Priorytet 4: Automatyzacja
 1. Integracja z Google Cloud Vision API
 2. System OCR dla paragonów
 3. Automatyczne przetwarzanie danych
 4. System powiadomień
 
-### Priorytet 4: System Użytkowników
+### Priorytet 5: System Użytkowników
 1. Model User i integracja z Flask-Login
 2. Formularze logowania i rejestracji
 3. System uprawnień
@@ -166,4 +180,23 @@ sudo apt install ca-certificates
 3. Zaktualizuj certyfikaty:
 ```bash
 sudo update-ca-certificates
+```
+
+### Problem z kompilacją Tailwind CSS
+
+Jeśli występują problemy z kompilacją Tailwind CSS:
+
+1. Upewnij się, że masz zainstalowane wszystkie zależności:
+```bash
+npm install -D tailwindcss postcss autoprefixer
+```
+
+2. Zainicjuj konfigurację Tailwind:
+```bash
+npx tailwindcss init
+```
+
+3. Uruchom watch mode podczas rozwoju:
+```bash
+npx tailwindcss -i ./src/web/static/css/main.css -o ./src/web/static/css/style.css --watch
 ```

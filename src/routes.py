@@ -1,13 +1,17 @@
-from flask import Blueprint, request, jsonify
-from src.database.models import Receipt, ReceiptItem, db
+from flask import Blueprint, request, jsonify, render_template
+from src.models import Receipt, ReceiptItem, db
 from werkzeug.exceptions import BadRequest
 import datetime
 
-main = Blueprint('main', __name__)
+main = Blueprint('main', __name__)  # Ensure no url_prefix
+
+@main.route('/api/message')
+def get_message():
+    return jsonify({'message': 'Welcome to Receipts Manager'})
 
 @main.route('/')
-def index():
-    return jsonify({"message": "Welcome to Receipts Manager"})
+def home():
+    return render_template('index.html')
 
 @main.route('/upload', methods=['POST'])
 def upload():
@@ -88,3 +92,11 @@ def view_receipt(receipt_id):
             ]
         }
     }), 200
+
+@main.route('/receipt/new')
+def new_receipt():
+    return render_template('receipt_form.html')
+
+@main.route('/receipt/list')
+def receipt_list_view():
+    return render_template('receipt_list.html')

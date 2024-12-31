@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Receipts Manager{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">Welcome to Receipts Manager</h1>
+    <p class="hero-subtitle">Efficiently manage and track your receipts in one place</p>
+    <div id="message" class="loading">Loading...</div>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <i class="fas fa-upload feature-icon"></i>
+            <h3 class="feature-title">Easy Upload</h3>
+            <p class="feature-description">Quickly upload and store your receipts digitally</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-search feature-icon"></i>
+            <h3 class="feature-title">Smart Search</h3>
+            <p class="feature-description">Find any receipt instantly with powerful search</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-chart-pie feature-icon"></i>
+            <h3 class="feature-title">Analytics</h3>
+            <p class="feature-description">Track spending patterns and generate reports</p>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <a href="{{ url_for('main.new_receipt') }}" class="cta-button">
+            <i class="fas fa-plus"></i>
+            Add Your First Receipt
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const messageElement = document.getElementById('message');
+        try {
+            const response = await fetch('/api/message');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            messageElement.textContent = data.message;
+            messageElement.classList.remove('loading');
+        } catch (error) {
+            messageElement.textContent = 'Error loading message';
+            messageElement.style.color = 'red';
+            console.error('Error:', error);
+        }
+    });
+</script>
+{% endblock %}

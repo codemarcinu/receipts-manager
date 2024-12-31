@@ -1,36 +1,33 @@
 from flask import Flask
-import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from src.config import Config
 
-def create_app(test_config=None):
+# Initialize extensions
+db = SQLAlchemy()
+migrate = Migrate()
+
+def create_app(config_class=Config):
     app = Flask(__name__)
+    app.config.from_object(config_class)
     
-    # Basic configuration
-    app.config.from_mapping(
-        SECRET_KEY=os.environ.get('SECRET_KEY', 'dev'),
-        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite:///receipts.db'),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        UPLOAD_FOLDER=os.path.join(app.root_path, 'uploads')
-    )
-
-    if test_config is not None:
-        app.config.update(test_config)
-
-    # Ensure upload folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-    # Initialize database
-    from src.database.models import db
+    # Initialize extensions
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
-
-    # Register blueprints
-    from src.views import bp as receipts_bp, register_error_handlers
-    app.register_blueprint(receipts_bp)
-    register_error_handlers(app)
-
+    migrate.init_app(app, db)
+    
+    # Create required directories
+    Config.init_app(app)
+    
+    # Import and register blueprints
+    from src.routes import main
+    app.register_blueprint(main)
+    
+    # Import models for migrations
+    from src.models import Receipt, ReceiptItem
+    
     return app
 
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)

@@ -2,19 +2,44 @@
   "name": "receipts-manager",
   "version": "1.0.0",
   "description": "System zarządzania paragonami",
+  "private": true,
   "scripts": {
     "build": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --minify",
     "watch": "tailwindcss -i ./src/web/static/css/style.css -o ./src/web/static/css/main.css --watch",
     "dev": "npm run watch",
     "clean": "rm -f ./src/web/static/css/main.css",
-    "build:prod": "npm run clean && npm run build"
+    "build:prod": "npm run clean && npm run build",
+    "build:css": "NODE_ENV=production tailwindcss -i ./src/web/static/css/main.css -o ./src/web/static/css/style.min.css --minify",
+    "dev:css": "tailwindcss -i ./src/web/static/css/main.css -o ./src/web/static/css/style.css --watch",
+    "analyze:css": "npx purgecss --css src/web/static/css/style.css --content src/web/templates/**/*.html src/web/static/js/**/*.js --output src/web/static/css/purged/"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17"
+    "postcss": "^8.4.33",
+    "autoprefixer": "^10.4.17",
+    "postcss-cli": "^10.1.0",
+    "tailwindcss": "^3.4.1",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "cssnano": "^6.0.3",
+    "postcss-custom-properties": "^13.3.2",
+    "postcss-import": "^16.0.0"
   },
   "dependencies": {
     "@material/web": "^1.0.0"
-  }
+  },
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codemarcinu/receipts-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codemarcinu/receipts-manager/issues"
+  },
+  "homepage": "https://github.com/codemarcinu/receipts-manager#readme"
 }

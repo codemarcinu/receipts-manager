@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html lang="pl" class="scroll-smooth">
+<html lang="pl" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}System Zarządzania Paragonami{% endblock %}</title>
+    <title>{% block title %}Receipts Manager{% endblock %}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% if config.DEBUG %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% else %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}">
+    {% endif %}
 
     {% block extra_css %}{% endblock %}
 
@@ -22,13 +26,22 @@
             opacity: 0;
         }
     </style>
+
+    <script>
+        // Sprawdzanie dark mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-900 font-roboto antialiased flex flex-col min-h-screen">
+<body class="h-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <a href="#main-content" class="fixed top-2 left-2 z-50 bg-primary-500 text-white px-4 py-2 rounded-lg transform -translate-y-full focus:translate-y-0 transition-transform duration-300">
         Przejdź do głównej treści
     </a>
 
-    <header class="bg-white shadow-material-1">
+    <header class="bg-white dark:bg-gray-800 shadow-material-1">
         <div class="max-w-screen-xl mx-auto py-4 px-4 lg:px-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-primary-500">Moje Paragony</h1>
 
@@ -48,7 +61,7 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow md-container mt-8 mb-10 px-4 w-full max-w-screen-xl mx-auto">
+    <main id="main-content" class="container mx-auto px-4 py-8">
         <div id="notification-container" class="fixed top-20 right-6 z-50 space-y-2">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -63,9 +76,18 @@
 
         {% block content %}{% endblock %}  <!--- add base content block here --->
 
+        <!-- Example of new Material Design component usage -->
+        <button class="md-button md-button--primary">
+            Click me
+        </button>
+
+        <div class="md-card">
+            <!-- Card content -->
+        </div>
+
     </main>
 
-    <footer class="bg-gray-100 py-6 mt-auto">
+    <footer class="bg-white dark:bg-gray-800 shadow mt-auto">
         <div class="md-container text-center max-w-screen-xl mx-auto px-4">
             <p class="text-gray-600">&copy; {{ current_year }} System Zarządzania Paragonami</p>
             <div class="mt-2 text-sm text-gray-500">Projekt zarządzania paragonami i inwentaryzacji</div>
