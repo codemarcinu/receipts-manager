@@ -26,9 +26,7 @@ from flask import (
     jsonify
 )
 
-from src.database.models import Receipt, Product, Category
-
-from src.database import db
+from src.database.models import Receipt, Product, Category, db
 
 from .forms import ReceiptUploadForm, ReceiptVerificationForm
 import logging
@@ -55,6 +53,7 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
+    """Sprawdza, czy plik ma dozwolony rozszerzenie."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -82,6 +81,10 @@ def forbidden_error(error):
 
     return render_template('errors/403.html'), 403
 
+
+# Funkcja do rejestracji error handlers
+def register_error_handlers(app):
+    app.register_blueprint(errors)
 
 # Widoki główne
 
@@ -121,32 +124,36 @@ def upload():
 
             file = form.receipt_image.data
 
-            filename = secure_filename(file.filename)
-
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-
-            file.save(filepath)
-
-
-            # Dodawanie paragonu do bazy danych
-            receipt = Receipt(
-                store=form.store.data,
-                purchase_date=form.purchase_date.data,
-                total_amount=form.total_amount.data,
-                image_filename=filename
-            )
-            db.session.add(receipt)
-            db.session.commit()
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
+                    os.makedirs(current_app.config['UPLOAD_FOLDER'])
+                file.save(filepath)
 
 
-            flash('Paragon został pomyślnie dodany.', 'success')
+                # Dodawanie paragonu do bazy danych
+                receipt = Receipt(
+                    store=form.store.data,
+                    purchase_date=form.purchase_date.data,
+                    total_amount=form.total_amount.data,
+                    image_filename=filename
+                )
+                db.session.add(receipt)
+                db.session.commit()
 
-            return redirect(url_for('receipts.index'))
+
+                flash('Paragon został pomyślnie dodany.', 'success')
+
+                return redirect(url_for('receipts.index'))
+
+            else:
+                flash('Nieprawidłowy format pliku lub brak pliku.', 'danger')
 
         except Exception as e:
 
             db.session.rollback()
-
+            logger.error(f"Błąd podczas dodawania paragonu: {str(e)}")
             flash(f'Wystąpił błąd podczas dodawania paragonu: {str(e)}', 'danger')
 
 
@@ -170,7 +177,7 @@ def verify_receipt(receipt_id):
 
             'receipt_id': receipt.id,
 
-            'store_name': receipt.store_name,
+            'store': receipt.store,
 
             'purchase_date': receipt.purchase_date,
 
@@ -182,7 +189,7 @@ def verify_receipt(receipt_id):
 
                 'name': product.name,
 
-                'unit_price': product.unit_price,
+                'price': product.price,
 
                 'quantity': product.quantity,
 
@@ -206,7 +213,7 @@ def verify_receipt(receipt_id):
 
             try:
 
-                receipt.store_name = form.store_name.data
+                receipt.store = form.store.data
 
                 receipt.purchase_date = form.purchase_date.data
 
@@ -249,7 +256,7 @@ def verify_receipt(receipt_id):
 
                             product.name = product_form['name'].data
 
-                            product.unit_price = product_form['unit_price'].data
+                            product.price = product_form['price'].data
 
                             product.quantity = product_form['quantity'].data
 
@@ -263,11 +270,9 @@ def verify_receipt(receipt_id):
 
                         product = Product(
 
-                            receipt_id=receipt.id,
-
                             name=product_form['name'].data,
 
-                            unit_price=product_form['unit_price'].data,
+                            price=product_form['price'].data,
 
                             quantity=product_form['quantity'].data,
 
@@ -275,7 +280,9 @@ def verify_receipt(receipt_id):
 
                             category_id=product_form['category_id'].data or None,
 
-                            expiry_date=product_form['expiry_date'].data
+                            expiry_date=product_form['expiry_date'].data,
+
+                            receipt=receipt
                         )
 
                         db.session.add(product)
@@ -409,24 +416,27 @@ def delete_receipt(receipt_id):
 
 @bp.route('/receipts/upload', methods=['GET', 'POST'])
 def upload_receipt():
+    """Alternatywny widok do uploadowania paragonu."""
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash('No file selected')
+            flash('No file selected', 'danger')
             return redirect(request.url)
-            
+        
         file = request.files['file']
         if file.filename == '':
-            flash('No file selected')
+            flash('No file selected', 'danger')
             return redirect(request.url)
-            
+        
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             if not os.path.exists(UPLOAD_FOLDER):
                 os.makedirs(UPLOAD_FOLDER)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
-            flash('Receipt uploaded successfully')
+            flash('Receipt uploaded successfully', 'success')
             return redirect(url_for('receipts.upload_receipt'))
-            
+        else:
+            flash('Invalid file type.', 'danger')
+        
     return render_template('upload.html')
 
 
@@ -434,19 +444,19 @@ def test_save_receipt(db_manager):
     """Test zapisywania paragonu"""
     receipt_data = {
         'store': 'Test Store',
-        'date': '2024-01-20',
-        'total': 100.50,
-        'items': [
+        'purchase_date': '2024-01-20',
+        'total_amount': 100.50,
+        'products': [
             {
                 'name': 'Test Product 1',
-                'quantity': 2,
                 'price': 25.25,
+                'quantity': 2,
                 'unit': 'szt'
             },
             {
                 'name': 'Test Product 2',
-                'quantity': 1,
                 'price': 50.00,
+                'quantity': 1,
                 'unit': 'szt'
             }
         ]
@@ -458,5 +468,9 @@ def test_save_receipt(db_manager):
     # Sprawdzenie czy paragon został zapisany
     assert receipt.id is not None
     assert receipt.store == 'Test Store'
-    assert receipt.total == 100.50
-    assert len(receipt.items) == 2
+    assert receipt.total_amount == 100.50
+    assert len(receipt.products.all()) == 2
+
+# Funkcja do rejestracji error handlers
+def register_error_handlers(app):
+    app.register_blueprint(errors)

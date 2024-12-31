@@ -39,13 +39,14 @@ class Receipt(BaseModel):
     __tablename__ = 'receipts'
     
     store = Column(String(128), nullable=False)
-    date = Column(Date, nullable=False)
-    total = Column(Float, nullable=False)
+    purchase_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    total_amount = Column(Float, nullable=False)
     image_filename = Column(String(256), nullable=True)
+    status = Column(String(20), default='pending')
     products = relationship('ReceiptItem', back_populates='receipt', cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f"<Receipt {self.id} - {self.store} on {self.date}>"
+        return f"<Receipt {self.id} - {self.store} on {self.purchase_date}>"
 
 class ReceiptItem(BaseModel):
     __tablename__ = 'receipt_items'
@@ -150,7 +151,7 @@ class DatabaseManager:
 # app.py
 from flask import Flask
 from routes import main
-from database.manager import DatabaseManager
+from src.database.manager import DatabaseManager
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -171,8 +172,9 @@ def create_app(config_class=Config):
 import sys
 import os
 import pytest
-from app import create_app
-from database.manager import DatabaseManager
+from src.database.manager import DatabaseManager  # Updated import
+# Remove the line causing circular import
+# from src.app import create_app
 from config import Config
 
 @pytest.fixture(scope='session')
@@ -202,11 +204,100 @@ def test_db():
 @pytest.fixture
 def db_manager(test_db):
     """Creates an instance of DatabaseManager with the test database"""
+    import os
     os.environ['DATABASE_URL'] = test_db
+    from src.database.manager import DatabaseManager
+
     manager = DatabaseManager()
     yield manager
     manager.dispose_engine()
+
 # src/database/models.py
-from src.database.manager import DatabaseManager
-# src/database/models.py
-from src.database.manager import DatabaseManager
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from sqlalchemy.sql import func
+
+db = SQLAlchemy()
+
+class BaseModel(db.Model):
+    """Base model class for common columns and methods."""
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    def save(self):
+        """Save the model instance to database."""
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    def delete(self):
+        """Delete the model instance from database."""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+class Receipt(BaseModel):
+    __tablename__ = 'receipts'
+    
+    store = db.Column(db.String(128), nullable=False)
+    purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    total_amount = db.Column(db.Float, nullable=False)
+    image_filename = db.Column(db.String(256), nullable=True)
+    status = db.Column(db.String(20), default='pending')
+
+    # Relacje
+    products = db.relationship('ReceiptItem', back_populates='receipt', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<Receipt {self.id} - {self.store} on {self.purchase_date}>"
+
+class ReceiptItem(BaseModel):
+    __tablename__ = 'receipt_items'
+    
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit = db.Column(db.String(50), nullable=False)
+    receipt_id = db.Column(db.Integer, db.ForeignKey('receipts.id', ondelete='CASCADE'), nullable=False)
+    receipt = db.relationship('Receipt', back_populates='products')
+
+    def __repr__(self):
+        return f"<ReceiptItem {self.name} - {self.quantity} {self.unit}>"
+
+class Category(BaseModel):
+    __tablename__ = 'categories'
+    
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    products = db.relationship('Product', back_populates='category', lazy='dynamic', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<Category {self.name}>"
+
+class Product(BaseModel):
+    __tablename__ = 'products'
+    
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='SET NULL'), nullable=True)
+    category = db.relationship('Category', back_populates='products')
+
+    def __repr__(self):
+        return f"<Product {self.name}>"
+
+class ProductStatus(BaseModel):
+    __tablename__ = 'product_status'
+    
+    status = db.Column(db.String(50), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f"<ProductStatus {self.status}>"

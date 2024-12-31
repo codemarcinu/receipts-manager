@@ -2,7 +2,7 @@ import os
 import sys
 import pytest
 from src.web import create_app
-from src.database.models import Base
+from src.database.models import Base  # Updated import
 from config import Config
 
 # Add project root and src directory to Python path

@@ -1,0 +1,17 @@
+<!-- filepath: src/templates/index.html -->
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <title>Strona Główna</title>
+  </head>
+  <body>
+    <h1>Witaj w Receipts Manager!</h1>
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('receipts.receipt_list') }}">Lista Paragonów</a></li>
+        <li><a href="{{ url_for('receipts.upload') }}">Dodaj Paragon</a></li>
+      </ul>
+    </nav>
+  </body>
+</html>
