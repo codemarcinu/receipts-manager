@@ -38,12 +38,15 @@ class BaseModel(db.Model):
 class Receipt(BaseModel):
     __tablename__ = 'receipts'
     
+    id = Column(Integer, primary_key=True)  # Dodany klucz główny
     store = Column(String(128), nullable=False)
     purchase_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     total_amount = Column(Float, nullable=False)
     image_filename = Column(String(256), nullable=True)
     status = Column(String(20), default='pending')
     products = relationship('ReceiptItem', back_populates='receipt', cascade='all, delete-orphan')
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"<Receipt {self.id} - {self.store} on {self.purchase_date}>"
@@ -245,9 +248,10 @@ class BaseModel(db.Model):
             db.session.rollback()
             raise e
 
-class Receipt(BaseModel):
+class Receipt(db.Model):
     __tablename__ = 'receipts'
     
+    id = db.Column(db.Integer, primary_key=True)  # Dodany klucz główny
     store = db.Column(db.String(128), nullable=False)
     purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     total_amount = db.Column(db.Float, nullable=False)
@@ -256,6 +260,8 @@ class Receipt(BaseModel):
 
     # Relacje
     products = db.relationship('ReceiptItem', back_populates='receipt', cascade='all, delete-orphan')
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"<Receipt {self.id} - {self.store} on {self.purchase_date}>"

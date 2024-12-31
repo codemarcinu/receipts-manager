@@ -10,9 +10,9 @@
     "build:prod": "npm run clean && npm run build"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^3.4.0"
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
   },
   "dependencies": {
     "@material/web": "^1.0.0"

@@ -1,5 +1,4 @@
-# Systemu Syste
-m Zarządzania Paragonami - Dokumentacja Projektu
+# System Zarządzania Paragonami - Dokumentacja Projektu
 
 ## Stan Projektu na dzień 28.12.2024
 
@@ -124,3 +123,47 @@ pytest==8.0.0
 3. Dodanie testów jednostkowych
 4. Integracja z OCR
 5. Implementacja systemu użytkowników
+
+## Rozwiązywanie problemów
+
+### Problem z certyfikatem SSL podczas instalacji pakietów
+
+Jeśli podczas instalacji pakietów poprzez `pip install -r requirements.txt` pojawia się błąd SSL, wykonaj następujące kroki:
+
+1. Najpierw spróbuj zaktualizować narzędzia pip i setuptools:
+```bash
+pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org pip setuptools --upgrade
+```
+
+2. Następnie zainstaluj wymagane pakiety używając parametru trusted-host:
+```bash
+pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
+```
+
+#### Dlaczego występuje ten problem?
+
+Problem występuje, gdy system nie może zweryfikować certyfikatu SSL podczas połączenia z PyPI (Python Package Index). Może to być spowodowane przez:
+- Przestarzałe certyfikaty w systemie
+- Problemy z zaporą sieciową
+- Proxy blokujące połączenia HTTPS
+- Nieaktualne narzędzia pip lub setuptools
+
+#### Rozwiązanie długoterminowe
+
+Aby trwale rozwiązać problem z certyfikatami SSL:
+
+1. Zaktualizuj system:
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+2. Zainstaluj aktualne certyfikaty:
+```bash
+sudo apt install ca-certificates
+```
+
+3. Zaktualizuj certyfikaty:
+```bash
+sudo update-ca-certificates
+```

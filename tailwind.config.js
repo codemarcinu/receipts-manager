@@ -1,24 +1,24 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/web/templates/**/*.html",
-    "./src/web/static/js/**/*.js",
+    "./templates/**/*.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
         // Rozszerzone kolory primary
         'primary': {
-          50: '#F3E5F5',
-          100: '#E1BEE7',
-          200: '#CE93D8',
-          300: '#BA68C8',
-          400: '#AB47BC',
-          500: '#9C27B0', // Bazowy kolor primary
-          600: '#8E24AA',
-          700: '#7B1FA2',
-          800: '#6A1B9A',
-          900: '#4A148C',
+          50: '#f3e5f5',
+          100: '#e1bee7',
+          200: '#ce93d8',
+          300: '#ba68c8',
+          400: '#ab47bc',
+          500: '#9c27b0', // Bazowy kolor primary
+          600: '#8e24aa',
+          700: '#7b1fa2',
+          800: '#6a1b9a',
+          900: '#4a148c',
           // Nowe odcienie
           'light': '#B868C8',
           'dark': '#6A1B9A',
@@ -46,14 +46,14 @@ module.exports = {
         // Rozszerzone kolory błędów, ostrzeżeń itp.
         'error': {
           50: '#FFEBEE',
-          100: '#FFCDD2',
+          100: '#ffcdd2',
           200: '#EF9A9A',
           300: '#E57373',
           400: '#EF5350',
-          500: '#F44336', // Bazowy kolor błędu
+          500: '#f44336', // Bazowy kolor błędu
           600: '#E53935',
           700: '#D32F2F',
-          800: '#C62828',
+          800: '#c62828',
           900: '#B71C1C',
         },
         

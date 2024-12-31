@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import logging
 import os
+from pathlib import Path
 
 # Konfiguracja loggera
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('receipts', __name__, url_prefix='/receipts')
 errors = Blueprint('errors', __name__)
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = Path(current_app.instance_path) / 'uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
@@ -70,10 +71,10 @@ def upload():
             file = form.receipt_image.data
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
-                    os.makedirs(current_app.config['UPLOAD_FOLDER'])
-                file.save(filepath)
+                upload_path = Path(current_app.config['UPLOAD_FOLDER'])
+                upload_path.mkdir(parents=True, exist_ok=True)
+                file_path = upload_path / filename
+                file.save(str(file_path))
 
                 # Dodawanie paragonu do bazy danych
                 receipt = Receipt(
@@ -213,9 +214,9 @@ def delete_receipt(receipt_id):
         # Usuwanie powiązanego pliku
         if receipt.image_filename:
             try:
-                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], receipt.image_filename)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
+                file_path = Path(current_app.config['UPLOAD_FOLDER']) / receipt.image_filename
+                if file_path.exists():
+                    file_path.unlink()
             except Exception as e:
                 logger.warning(f"Nie udało się usunąć pliku paragonu: {str(e)}")
 
@@ -251,9 +252,10 @@ def upload_receipt():
         
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            if not os.path.exists(UPLOAD_FOLDER):
-                os.makedirs(UPLOAD_FOLDER)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            upload_path = Path(UPLOAD_FOLDER)
+            upload_path.mkdir(parents=True, exist_ok=True)
+            file_path = upload_path / filename
+            file.save(str(file_path))
             flash('Receipt uploaded successfully', 'success')
             return redirect(url_for('receipts.upload_receipt'))
         else:

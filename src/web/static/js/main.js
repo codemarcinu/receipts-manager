@@ -1,3 +1,6 @@
+import { NotificationSystem } from './notifications.js';
+import { ReceiptVerificationForm } from './ReceiptVerificationForm.js';
+
 // ReceiptVerificationForm.js
 /**
  * ReceiptVerificationForm.js
@@ -168,11 +171,24 @@ class ReceiptVerificationForm {
     }
 }
 
-// Inicjalizacja formularza po załadowaniu strony
+// Initialize components
 document.addEventListener('DOMContentLoaded', () => {
-    window.receiptForm = new ReceiptVerificationForm();
+    // Initialize receipt form if exists
+    const formElement = document.getElementById('verifyForm');
+    if (formElement) {
+        window.receiptForm = new ReceiptVerificationForm();
+    }
+
+    // Initialize notifications system
+    window.notifications = new NotificationSystem();
+
+    // Add global error handler
+    window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        window.notifications?.show('Wystąpił nieoczekiwany błąd', 'error');
+    });
 });
 
-// Eksport funkcji dla przycisków w HTML
-window.addProduct = () => window.receiptForm.addProduct();
-window.removeProduct = (button) => window.receiptForm.removeProduct(button);
+// Export global functions
+window.addProduct = () => window.receiptForm?.addProduct();
+window.removeProduct = (button) => window.receiptForm?.removeProduct(button);

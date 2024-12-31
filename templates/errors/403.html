@@ -1,0 +1,12 @@
+<!-- filepath: src/templates/errors/403.html -->
+{% extends "base.html" %}
+
+{% block title %}403 - Dostęp Zabroniony{% endblock %}
+
+{% block content %}
+<div class="error-container text-center">
+    <h1>403 - Dostęp Zabroniony</h1>
+    <p>Nie masz uprawnień do dostępu do tej strony.</p>
+    <a href="{{ url_for('receipts.index') }}" class="btn btn-primary">Wróć na Stronę Główną</a>
+</div>
+{% endblock %}
